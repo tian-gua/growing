@@ -21,7 +21,7 @@ func Generate(tableName string) {
 	//关闭链接
 	defer db.Close()
 
-	//查询第一条数据
+	//查询表结构信息
 	sqlString := "desc " + tableName
 	rows, err := db.Query(sqlString)
 	if err != nil {
