@@ -10,14 +10,14 @@ import (
 //数据库连接对象
 var gdb *sql.DB = nil
 
-func Update() {
 
-}
-
-//保存一条记录
+//插入或者更新一条记录
+//插入和更新取决于 id 字段是否为0
 func Save(obj interface{}) error {
 
+	//用于判断是否为插入方法
 	var isInsert bool = false
+	//用于存放sql字段
 	var sqlStr string = ""
 
 	//获得类型的信息
@@ -83,21 +83,46 @@ func Save(obj interface{}) error {
 		return err
 	}
 	if rownum == 0 {
-		return errors.New("insert data error")
+		return errors.New("no record insert")
 	}
 
 	return nil
 
 }
 
-func Remove() {
 
+//删除一条记录
+func Delete(obj interface{}) error {
+	//用于存放sql字段
+	var sqlStr string = ""
+	//获得类型的信息
+	t := reflect.TypeOf(obj).Elem()
+	v := reflect.ValueOf(obj).Elem()
+	tName := t.Name()
+
+	//获得要删除的id
+	id := Parse(v.FieldByName("id"))
+	if "0" == id {
+		errors.New("id is null")
+	}
+	//拼sql
+	sqlStr = "delete from " + tName + " where id = " + id
+	//执行sql
+	result, err := gdb.Exec(sqlStr)
+	if err != nil {
+		return err
+	}
+	rownum, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rownum == 0 {
+		return errors.New("no record delete")
+	}
+
+	return nil
 }
 
 func Query() {
-
-}
-
-func init() {
 
 }
