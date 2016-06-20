@@ -1,4 +1,4 @@
-package cache
+package gcache
 
 import (
 	"time"
@@ -55,7 +55,7 @@ func (c *cache) isExpire() error {
 	now := time.Now()
 	//判断是否过期
 	if now.After(t) {
-		return errors.New("expire")
+		return errors.New("expired")
 	}
 	return nil
 
