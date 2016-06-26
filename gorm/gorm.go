@@ -8,7 +8,7 @@ import (
 	"gorm/utils"
 	"strconv"
 	"fmt"
-	gutil "utils"
+	gutils "utils"
 	"time"
 )
 
@@ -31,7 +31,7 @@ func Save(obj interface{}) error {
 	tName := t.Name()
 
 	//取id得值判断是insert 还是 update
-	id := utils.Parse(v.FieldByName("id"))
+	id := utils.Parse(v.FieldByName("Id"))
 	if "0" == id {
 		isInsert = true
 	}
@@ -43,7 +43,8 @@ func Save(obj interface{}) error {
 		numField := t.NumField()
 		for i := 0; i < numField; i++ {
 			fieldName := t.Field(i).Name
-			sqlStr += fieldName + ","
+			unCamelFieldName, _ := utils.UnCamelCase(fieldName)
+			sqlStr += unCamelFieldName + ","
 			value := utils.Parse(v.FieldByName(fieldName))
 			//如果遇到id字段,则用default代替id的值, 实现自动自增
 			if "Id" == t.Field(i).Name {
@@ -66,17 +67,21 @@ func Save(obj interface{}) error {
 		for i := 0; i < numField; i++ {
 
 			fieldName := t.Field(i).Name
+			unCamelFieldName, _ := utils.UnCamelCase(fieldName)
 			if "Id" == fieldName {
 				continue
 			} else {
-				sqlStr += fieldName + "=" + utils.Parse(v.FieldByName(fieldName)) + ","
+
+				sqlStr += unCamelFieldName + "=" + utils.Parse(v.FieldByName(fieldName)) + ","
 
 			}
 
 		}
-		sqlStr = strings.TrimRight(sqlStr, ",") + "where id = " + id
+		sqlStr = strings.TrimRight(sqlStr, ",") + " where id = " + id
 
 	}
+
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	//执行sql
 	result, err := gdb.Exec(sqlStr)
@@ -157,7 +162,7 @@ func Query(obj interface{}, target interface{}) error {
 	}
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName + " where " + strings.TrimRight(whereStr, "and ")
 
-	fmt.Println("[sql-gorm-" + gutil.DateFormat(time.Now(),"yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	//查询
 	rows, err := gdb.Query(sqlStr)
