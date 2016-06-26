@@ -58,12 +58,13 @@ func ToCamelCase(str string) (string, error) {
 	for {
 		//找到匹配的字符串
 		findStr := reg.FindString(str)
+		//匹配结束则退出循环
 		if len(findStr) == 0 {
 			break
 		}
 		//去掉匹配到的_x字符串中的_, 并将x转换成大写
 		newStr := strings.ToUpper(strings.Trim(findStr, "_"))
-		str = strings.Replace(str, findStr, strings.Title(newStr), 1)
+		str = strings.Replace(str, findStr, strings.Title(newStr), -1)
 
 	}
 	return str, nil
@@ -77,10 +78,25 @@ func UnCamelCase(str string) (string, error) {
 		return "", nil
 	}
 	//查找所有的大写字符
-	//req, err := regexp.Compile("[A-Z]")
-	//if err != nil {
-	//	return str, err
-	//}
-	return "", nil
+	reg, err := regexp.Compile("[A-Z]")
+	if err != nil {
+		return str, err
+	}
+
+	for {
+		//找到匹配的字符串
+		findStr := reg.FindString(str)
+		//匹配结束则退出循环
+		if len(findStr) == 0 {
+			break
+		}
+
+		//将大写字符串变成 _ 加 对应小写
+		newStr := "_" + strings.ToLower(findStr)
+		str = strings.Replace(str, findStr, newStr, -1)
+
+	}
+	//如果转换完成自后 第一个 字符串 为 _ ,则删掉_
+	return strings.TrimLeft(str, "_"), nil
 
 }
