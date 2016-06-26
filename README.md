@@ -16,12 +16,17 @@ growing及成长的意思,框架会随着时间慢慢成长。
 growing框架 目前分为 6个模块
 
 ------------------------------------------------
-缓存(gcache包)       :使用Get和Put方发获得对象和存放对象
-日志(glog包)           :使用Info,Debug,Error方法分别输出信息到到不同的日志文件
-路由(grouter包)        :使用Route方法将字符串和控制器映射到一起,根据请求的方法(post或者get)调用Post或者Get方法
-会话(gsession包)       :通过GetSession方法得到Session对象,然后使用Session的Get和Put方法
-orm(gorm包)            :通过gorm包的Save,Delete,Query方法操作数据库
-工具集(utils包)         :对go函数的各种封装
+缓存(gcache包)       :使用Get和Put方发获得对象和存放对象  
+
+日志(glog包)           :使用Info,Debug,Error方法分别输出信息到到不同的日志文件  
+
+路由(grouter包)        :使用Route方法将字符串和控制器映射到一起,根据请求的方法(post或者get)调用Post或者Get方法  
+
+会话(gsession包)       :通过GetSession方法得到Session对象,然后使用Session的Get和Put方法  
+
+orm(gorm包)            :通过gorm包的Save,Delete,Query方法操作数据库  
+
+工具集(utils包)         :对go函数的各种封装  
 ------------------------------------------------
 
 
