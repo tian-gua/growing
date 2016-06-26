@@ -4,8 +4,6 @@ import (
 	"reflect"
 	"strconv"
 	"regexp"
-	"fmt"
-	"utils"
 	"strings"
 )
 
@@ -47,29 +45,42 @@ func IsZero(v reflect.Value) bool {
 
 //将字符串转为驼峰命名规则,并且首字母大写
 //如: a_cd -> ACd
-func ToCamelCase(str string) string {
+func ToCamelCase(str string) (string, error) {
 	//判断参数是否为空
-	if utils.IsEmpty(&str) {
-		return ""
+	if len(str) == 0 {
+		return "", nil
 	}
 	//查找所有的_x 字符串,并替换成X
 	reg, err := regexp.Compile("_([a-z])");
 	if err != nil {
-		fmt.Println(err)
+		return str, err
 	}
-	//去掉匹配到的_x字符串中的_, 并将x转换成大写
-	newStr := strings.ToUpper(strings.Trim(reg.FindString(str), "_"))
-	//将x替换成X
-	newStr = reg.ReplaceAllString(str, newStr)
-	//返回的字符串首字符变成大写
-	return strings.Title(newStr)
+	for {
+		//找到匹配的字符串
+		findStr := reg.FindString(str)
+		if len(findStr) == 0 {
+			break
+		}
+		//去掉匹配到的_x字符串中的_, 并将x转换成大写
+		newStr := strings.ToUpper(strings.Trim(findStr, "_"))
+		str = strings.Replace(str, findStr, strings.Title(newStr), 1)
+
+	}
+	return str, nil
 }
 
 //和ToCamelCase方法襄樊
 //将ACd 转换成 A_cd
-func UnCamelCase(str string) {
-
-	//firstString := strings.Title()
-
+func UnCamelCase(str string) (string, error) {
+	//判断参数是否为空
+	if len(str) == 0 {
+		return "", nil
+	}
+	//查找所有的大写字符
+	//req, err := regexp.Compile("[A-Z]")
+	//if err != nil {
+	//	return str, err
+	//}
+	return "", nil
 
 }

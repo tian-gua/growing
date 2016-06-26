@@ -63,9 +63,9 @@ func Generate(tableName string) {
 		if err != nil {
 			fmt.Println(err)
 		}
-
+		newField, _ := ToCamelCase(string(values[0]))
 		//存放每一条记录的第一个字段(表的字段名) 到fields切片里
-		fields = append(fields, ToCamelCase(string(values[0])))
+		fields = append(fields, newField)
 		ftype := string(values[1])
 		switch true {
 		case strings.HasPrefix(ftype, "varchar"):
