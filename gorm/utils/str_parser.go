@@ -52,12 +52,6 @@ func ToCamelCase(str string) string {
 	if utils.IsEmpty(&str) {
 		return ""
 	}
-	//获得第一个字符串并转换成大写
-	bytes := []byte(str)
-	firstWord := string(bytes[0])
-	newFirstWord := strings.ToUpper(firstWord)
-	str = strings.Replace(str, firstWord, newFirstWord, 1)
-	//*str = string(bytes)
 	//查找所有的_x 字符串,并替换成X
 	reg, err := regexp.Compile("_([a-z])");
 	if err != nil {
@@ -66,5 +60,16 @@ func ToCamelCase(str string) string {
 	//去掉匹配到的_x字符串中的_, 并将x转换成大写
 	newStr := strings.ToUpper(strings.Trim(reg.FindString(str), "_"))
 	//将x替换成X
-	return reg.ReplaceAllString(str, newStr)
+	newStr = reg.ReplaceAllString(str, newStr)
+	//返回的字符串首字符变成大写
+	return strings.Title(newStr)
+}
+
+//和ToCamelCase方法襄樊
+//将ACd 转换成 A_cd
+func UnCamelCase(str string) {
+
+	//firstString := strings.Title()
+
+
 }
