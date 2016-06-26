@@ -11,6 +11,11 @@ import (
 var db string = "mysql"
 var connStr string = ""
 
+
+//根据数据库的table生成struct
+//字段生成规则:
+//id->Id
+//user_name->UserName
 func Generate(tableName string) {
 	//链接数据库
 	db, err := sql.Open(db, connStr)
@@ -60,7 +65,7 @@ func Generate(tableName string) {
 		}
 
 		//存放每一条记录的第一个字段(表的字段名) 到fields切片里
-		fields = append(fields, string(values[0]))
+		fields = append(fields, ToCamelCase(string(values[0])))
 		ftype := string(values[1])
 		switch true {
 		case strings.HasPrefix(ftype, "varchar"):
