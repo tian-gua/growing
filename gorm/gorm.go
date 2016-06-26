@@ -5,8 +5,11 @@ import (
 	"errors"
 	"reflect"
 	"strings"
-	"fmt"
 	"gorm/utils"
+	"strconv"
+	"fmt"
+	gutil "utils"
+	"time"
 )
 
 //数据库连接对象
@@ -133,7 +136,8 @@ func Query(obj interface{}, target interface{}) error {
 	//获得类型的信息
 	t := reflect.TypeOf(obj).Elem()
 	v := reflect.ValueOf(obj).Elem()
-	targetVlaue := reflect.ValueOf(target)
+	targetVlaue := reflect.ValueOf(target).Elem()
+
 	tName := t.Name()
 
 	sqlStr = "select "
@@ -142,6 +146,8 @@ func Query(obj interface{}, target interface{}) error {
 	for i := 0; i < t.NumField(); i++ {
 		fieldName := t.Field(i).Name
 		fieldValue := v.FieldByName(fieldName)
+		//字符串反驼峰转换,例如 UserName 会变成 user_name
+		fieldName, _ = utils.UnCamelCase(fieldName)
 		sqlStr += fieldName + ","
 		//如果查询属性的值为零值得话 不写进where查询里
 		if !utils.IsZero(fieldValue) {
@@ -150,6 +156,9 @@ func Query(obj interface{}, target interface{}) error {
 
 	}
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName + " where " + strings.TrimRight(whereStr, "and ")
+
+	fmt.Println("[sql-gorm-" + gutil.DateFormat(time.Now(),"yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
 	//查询
 	rows, err := gdb.Query(sqlStr)
 	if err != nil {
@@ -178,26 +187,43 @@ func Query(obj interface{}, target interface{}) error {
 			return err
 		}
 		//根据反射来新建一个和记录对应的对象
-		var newV = reflect.New(t)
+		var newV = reflect.New(t).Elem()
 		for i := 0; i < colNum; i++ {
 
-			newV = reflect.New(t).Elem()
-			newV.Field(i).Set(reflect.ValueOf(values[i]))
+			setValue(newV.Field(i), values[i])
 		}
-		targetVlaue.Field(index).Set(newV)
+		targetVlaue = reflect.Append(targetVlaue, newV)
 		index++
 	}
-	fmt.Println(index)
-	fmt.Println(sqlStr)
+	//更新target的值
+	reflect.ValueOf(target).Elem().Set(targetVlaue.Slice(0, index))
 	return nil
 
 }
+
+
+//将v2的值赋给v1
+func setValue(v1 reflect.Value, v2 sql.RawBytes) {
+
+	kind := v1.Kind()
+	switch kind {
+	case reflect.String:
+		v1.Set(reflect.ValueOf(string(v2)))
+	case reflect.Int:
+		num, _ := strconv.Atoi(string(v2))
+		v1.Set(reflect.ValueOf(num))
+	}
+
+}
+
 
 
 //关闭DB对象
 func CloseDB() {
 	gdb.Close()
 }
+
+
 
 
 
