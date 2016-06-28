@@ -28,6 +28,9 @@ func Save(obj interface{}) error {
 	t := reflect.TypeOf(obj).Elem()
 	v := reflect.ValueOf(obj).Elem()
 	tName := t.Name()
+	//结构体首字母转换为小写
+	//结构体首字母大写是为了供其他包访问,数据库则不用
+	tName = strings.ToLower(tName)
 
 	//取id得值判断是insert 还是 update
 	id := utils.Parse(v.FieldByName("Id"))
@@ -108,6 +111,9 @@ func Delete(obj interface{}) error {
 	t := reflect.TypeOf(obj).Elem()
 	v := reflect.ValueOf(obj).Elem()
 	tName := t.Name()
+	//结构体首字母转换为小写
+	//结构体首字母大写是为了供其他包访问,数据库则不用
+	tName = strings.ToLower(tName)
 
 	//获得要删除的id
 	id := utils.Parse(v.FieldByName("Id"))
@@ -143,6 +149,9 @@ func Query(obj interface{}, target interface{}) error {
 	targetVlaue := reflect.ValueOf(target).Elem()
 
 	tName := t.Name()
+	//结构体首字母转换为小写
+	//结构体首字母大写是为了供其他包访问,数据库则不用
+	tName = strings.ToLower(tName)
 
 	sqlStr = "select "
 
