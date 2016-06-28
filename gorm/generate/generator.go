@@ -82,7 +82,7 @@ func Generate(tableName string) {
 		fieldTypes = append(fieldTypes, ftype)
 	}
 
-	structString := "type " + tableName + " struct{\n"
+	structString := "type " + strings.Title(tableName) + " struct{\n"
 	for i, v := range fields {
 		structString += "\t" + v + "\t" + fieldTypes[i] + "\n"
 	}
