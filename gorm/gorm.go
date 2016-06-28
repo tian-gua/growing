@@ -168,7 +168,12 @@ func Query(obj interface{}, target interface{}) error {
 		}
 
 	}
+	//trim掉逗号和and
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName + " where " + strings.TrimRight(whereStr, "and ")
+	//trim掉空格
+	sqlStr = strings.TrimSpace(sqlStr)
+	//trim掉where
+	sqlStr = strings.Trim(sqlStr, "where")
 
 	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
