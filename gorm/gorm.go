@@ -5,10 +5,9 @@ import (
 	"errors"
 	"reflect"
 	"strings"
-	"gorm/utils"
 	"strconv"
 	"fmt"
-	gutils "utils"
+	"utils"
 	"time"
 )
 
@@ -81,7 +80,7 @@ func Save(obj interface{}) error {
 
 	}
 
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	//执行sql
 	result, err := gdb.Exec(sqlStr)
@@ -162,7 +161,7 @@ func Query(obj interface{}, target interface{}) error {
 	}
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName + " where " + strings.TrimRight(whereStr, "and ")
 
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	//查询
 	rows, err := gdb.Query(sqlStr)
