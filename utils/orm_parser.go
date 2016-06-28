@@ -29,10 +29,10 @@ func ToCamelCase(str string) (string, error) {
 		}
 		//去掉匹配到的_x字符串中的_, 并将x转换成大写
 		newStr := strings.ToUpper(strings.Trim(findStr, "_"))
-		str = strings.Replace(str, findStr, strings.Title(newStr), -1)
+		str = strings.Replace(str, findStr, newStr, -1)
 
 	}
-	return str, nil
+	return strings.Title(str), nil
 }
 
 //和ToCamelCase方法襄樊
