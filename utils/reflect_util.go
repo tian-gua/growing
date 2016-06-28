@@ -8,7 +8,7 @@ import (
 //判断是否是零值
 func IsZero(v reflect.Value) bool {
 	//获得值得类型
-	kind := v.Kind()
+	kind := reflect.Indirect(v).Kind()
 	switch kind {
 	case reflect.String:
 		if "" == v.String() {
@@ -21,7 +21,7 @@ func IsZero(v reflect.Value) bool {
 		}
 		return false
 	}
-	return false
+	return true
 }
 
 

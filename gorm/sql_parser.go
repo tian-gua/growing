@@ -16,8 +16,9 @@ func parseQuerySql(obj interface{}) string {
 	var sqlStr string = ""
 	var whereStr string = ""
 	//获得类型的信息
-	t := reflect.TypeOf(obj).Elem()
-	v := reflect.ValueOf(obj).Elem()
+	ov := reflect.ValueOf(obj)
+	v := reflect.Indirect(ov)
+	t := v.Type()
 
 	tName := t.Name()
 	//结构体首字母转换为小写
@@ -45,6 +46,40 @@ func parseQuerySql(obj interface{}) string {
 	sqlStr = strings.TrimSpace(sqlStr)
 	//trim掉where
 	sqlStr = strings.Trim(sqlStr, "where")
+
+	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
+	return sqlStr
+
+}
+
+
+
+
+//根据结构体生成查询sql
+func parseQueryAllSql(value reflect.Value) string {
+
+	var sqlStr string = ""
+	//获得反射信息
+	v := reflect.Indirect(value)
+	t := v.Type()
+
+	tName := t.Name()
+	//结构体首字母转换为小写
+	//结构体首字母大写是为了供其他包访问,数据库则不用
+	tName = strings.ToLower(tName)
+
+	sqlStr = "select "
+
+	//拼接需要查询的字段
+	for i := 0; i < t.NumField(); i++ {
+		fieldName := t.Field(i).Name
+		//字符串反驼峰转换,例如 UserName 会变成 user_name
+		fieldName, _ = utils.UnCamelCase(fieldName)
+		sqlStr += fieldName + ","
+	}
+	//trim掉逗号和and
+	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName
 
 	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
