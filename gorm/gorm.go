@@ -110,7 +110,7 @@ func Query(obj, target interface{}) error {
 //查询所有记录
 func QueryAll(target interface{}) error {
 	//获得target的反射信息
-	targetV := reflect.Indirect(reflect.ValueOf(target).Elem())
+	targetV := reflect.Indirect(reflect.ValueOf(target))
 	t := targetV.Type()
 	//给切片元素开辟一个空间
 	vSlice := reflect.MakeSlice(t, 1, 1)
@@ -157,7 +157,7 @@ func QueryAll(target interface{}) error {
 		index++
 	}
 	//更新target的值
-	reflect.ValueOf(target).Elem().Set(targetV.Slice(0, index))
+	reflect.ValueOf(target).Elem().Set(targetV.Slice(0,index))
 	return nil
 
 }
