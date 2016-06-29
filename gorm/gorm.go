@@ -63,7 +63,7 @@ func Query(obj, target interface{}) error {
 	t := tv.Type()
 	targetVlaue := reflect.Indirect(reflect.ValueOf(target))
 
-	sqlStr := parseQuerySql(tv)
+	sqlStr := parseQuerySql(obj)
 
 	//查询
 	rows, err := gdb.Query(sqlStr)
