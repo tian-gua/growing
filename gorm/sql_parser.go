@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 	"errors"
-	"utils"
+	"gutils"
 	"fmt"
 	"time"
 )
@@ -32,11 +32,11 @@ func parseQuerySql(obj interface{}) string {
 		fieldName := t.Field(i).Name
 		fieldValue := v.FieldByName(fieldName)
 		//字符串反驼峰转换,例如 UserName 会变成 user_name
-		fieldName, _ = utils.UnCamelCase(fieldName)
+		fieldName, _ = gutils.UnCamelCase(fieldName)
 		sqlStr += fieldName + ","
 		//如果查询属性的值为零值得话 不写进where查询里
-		if !utils.IsZero(fieldValue) {
-			whereStr += fieldName + "=" + utils.Parse(fieldValue) + " and "
+		if !gutils.IsZero(fieldValue) {
+			whereStr += fieldName + "=" + gutils.Parse(fieldValue) + " and "
 		}
 
 	}
@@ -47,7 +47,7 @@ func parseQuerySql(obj interface{}) string {
 	//trim掉where
 	sqlStr = strings.Trim(sqlStr, "where")
 
-	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	return sqlStr
 
@@ -75,13 +75,13 @@ func parseQueryAllSql(value reflect.Value) string {
 	for i := 0; i < t.NumField(); i++ {
 		fieldName := t.Field(i).Name
 		//字符串反驼峰转换,例如 UserName 会变成 user_name
-		fieldName, _ = utils.UnCamelCase(fieldName)
+		fieldName, _ = gutils.UnCamelCase(fieldName)
 		sqlStr += fieldName + ","
 	}
 	//trim掉逗号和and
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName
 
-	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	return sqlStr
 
@@ -104,7 +104,7 @@ func parseSaveSql(obj interface{}) string {
 	tName = strings.ToLower(tName)
 
 	//取id得值判断是insert 还是 update
-	id := utils.Parse(v.FieldByName("Id"))
+	id := gutils.Parse(v.FieldByName("Id"))
 	if "0" == id {
 		isInsert = true
 	}
@@ -116,9 +116,9 @@ func parseSaveSql(obj interface{}) string {
 		numField := t.NumField()
 		for i := 0; i < numField; i++ {
 			fieldName := t.Field(i).Name
-			unCamelFieldName, _ := utils.UnCamelCase(fieldName)
+			unCamelFieldName, _ := gutils.UnCamelCase(fieldName)
 			sqlStr += unCamelFieldName + ","
-			value := utils.Parse(v.FieldByName(fieldName))
+			value := gutils.Parse(v.FieldByName(fieldName))
 			//如果遇到id字段,则用default代替id的值, 实现自动自增
 			if "Id" == t.Field(i).Name {
 				valueStr += "default,"
@@ -140,12 +140,12 @@ func parseSaveSql(obj interface{}) string {
 		for i := 0; i < numField; i++ {
 
 			fieldName := t.Field(i).Name
-			unCamelFieldName, _ := utils.UnCamelCase(fieldName)
+			unCamelFieldName, _ := gutils.UnCamelCase(fieldName)
 			if "Id" == fieldName {
 				continue
 			} else {
 
-				sqlStr += unCamelFieldName + "=" + utils.Parse(v.FieldByName(fieldName)) + ","
+				sqlStr += unCamelFieldName + "=" + gutils.Parse(v.FieldByName(fieldName)) + ","
 
 			}
 
@@ -154,7 +154,7 @@ func parseSaveSql(obj interface{}) string {
 
 	}
 
-	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	return sqlStr
 
@@ -174,14 +174,14 @@ func parseDeleteSql(obj interface{}) string {
 	tName = strings.ToLower(tName)
 
 	//获得要删除的id
-	id := utils.Parse(v.FieldByName("Id"))
+	id := gutils.Parse(v.FieldByName("Id"))
 	if "0" == id {
 		errors.New("id is null")
 	}
 	//拼sql
 	sqlStr = "delete from " + tName + " where id = " + id
 
-	fmt.Println("[sql-gorm-" + utils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	return sqlStr
 }

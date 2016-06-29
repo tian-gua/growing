@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"utils"
+	"gutils"
 )
 
 
@@ -64,7 +64,7 @@ func Generate(tableName string) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		newField, _ := utils.ToCamelCase(string(values[0]))
+		newField, _ := gutils.ToCamelCase(string(values[0]))
 		//存放每一条记录的第一个字段(表的字段名) 到fields切片里
 		fields = append(fields, newField)
 		ftype := string(values[1])
