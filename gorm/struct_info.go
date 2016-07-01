@@ -40,36 +40,8 @@ func GetStructInfo(target interface{}) *StructInfo {
 		fmt.Println(GET_STRUCTINFO_ERROR)
 		return nil
 	}
-	//从map里取结构体信息,如果map没有则新建一个然后存map
-	if value, ok := StructInfoMap[t]; ok {
-		info = value
-	} else {
-		tableName := gutils.UnCamelCase(t.Name())
-		tableFieldNames := new([]string)
-		subStructInfo := new([]StructInfo)
-		fields := new([]StructField)
-		fieldNames := new([]string)
-		for index := 0; index < t.NumField(); index++ {
-			subsf := t.Field(index)
-			subt := subsf.Type
-			if subt.Kind() == reflect.Struct {
-				//递归获得子结构体信息
-				*subStructInfo = append(*subStructInfo, *GetValueInfo(subt))
-			} else {
-				sf := StructField{
-					name:subsf.Name,
-					tableFieldName:gutils.UnCamelCase(subsf.Name),
-					tableFieldType:gutils.GetDBType(subt.Kind().String())}
-				*fields = append(*fields, sf)
-				*fieldNames = append(*fieldNames, subsf.Name)
-				*tableFieldNames = append(*tableFieldNames, gutils.UnCamelCase(subsf.Name))
-			}
 
-		}
-
-		info = &StructInfo{name:t.Name(), tableName:tableName, fields:*fields, tableFieldNames:*tableFieldNames, fieldNames:*fieldNames, subStructInfo:*subStructInfo }
-		StructInfoMap[v.Type()] = info
-	}
+	info = GetValueInfo(t)
 
 	return info
 
