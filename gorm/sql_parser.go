@@ -32,7 +32,7 @@ func parseQuerySql(obj interface{}) string {
 		fieldName := t.Field(i).Name
 		fieldValue := v.FieldByName(fieldName)
 		//字符串反驼峰转换,例如 UserName 会变成 user_name
-		fieldName, _ = gutils.UnCamelCase(fieldName)
+		fieldName = gutils.UnCamelCase(fieldName)
 		sqlStr += fieldName + ","
 		//如果查询属性的值为零值得话 不写进where查询里
 		if !gutils.IsZero(fieldValue) {
@@ -75,7 +75,7 @@ func parseQueryAllSql(value reflect.Value) string {
 	for i := 0; i < t.NumField(); i++ {
 		fieldName := t.Field(i).Name
 		//字符串反驼峰转换,例如 UserName 会变成 user_name
-		fieldName, _ = gutils.UnCamelCase(fieldName)
+		fieldName = gutils.UnCamelCase(fieldName)
 		sqlStr += fieldName + ","
 	}
 	//trim掉逗号和and
@@ -116,7 +116,7 @@ func parseSaveSql(obj interface{}) string {
 		numField := t.NumField()
 		for i := 0; i < numField; i++ {
 			fieldName := t.Field(i).Name
-			unCamelFieldName, _ := gutils.UnCamelCase(fieldName)
+			unCamelFieldName := gutils.UnCamelCase(fieldName)
 			sqlStr += unCamelFieldName + ","
 			value := gutils.Parse(v.FieldByName(fieldName))
 			//如果遇到id字段,则用default代替id的值, 实现自动自增
@@ -140,7 +140,7 @@ func parseSaveSql(obj interface{}) string {
 		for i := 0; i < numField; i++ {
 
 			fieldName := t.Field(i).Name
-			unCamelFieldName, _ := gutils.UnCamelCase(fieldName)
+			unCamelFieldName := gutils.UnCamelCase(fieldName)
 			if "Id" == fieldName {
 				continue
 			} else {

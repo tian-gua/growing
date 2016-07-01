@@ -2,7 +2,7 @@ package gorm
 
 import "errors"
 
-const (
+var (
 	//获得结构体信息错误
-	GET_STRUCTINFO_ERROR = errors.New("GET_STRUCTINFO_ERROR")
+	GET_STRUCTINFO_ERROR = errors.New("get struct info error")
 )

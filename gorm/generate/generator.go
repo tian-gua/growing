@@ -64,21 +64,11 @@ func Generate(tableName string) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		newField, _ := gutils.ToCamelCase(string(values[0]))
+		newField := gutils.ToCamelCase(string(values[0]))
 		//存放每一条记录的第一个字段(表的字段名) 到fields切片里
 		fields = append(fields, newField)
 		ftype := string(values[1])
-		switch true {
-		case strings.HasPrefix(ftype, "varchar"):
-			ftype = "string"
-		case strings.HasPrefix(ftype, "int"):
-			ftype = "int"
-		case strings.HasPrefix(ftype, "decimal"):
-			ftype = "int64"
-		case strings.HasPrefix(ftype, "timestamp") || strings.HasPrefix(ftype, "datetime"):
-			ftype = "time.Time"
-
-		}
+		ftype = gutils.GetDBType(ftype)
 		fieldTypes = append(fieldTypes, ftype)
 	}
 
