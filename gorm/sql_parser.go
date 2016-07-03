@@ -1,9 +1,7 @@
 package gorm
 
 import (
-	"reflect"
 	"strings"
-	"errors"
 	"github.com/aidonggua/growing/gutils"
 	"fmt"
 	"time"
@@ -16,30 +14,19 @@ func parseQuerySql(obj interface{}) string {
 	var sqlStr string = ""
 	var whereStr string = ""
 	//获得类型的信息
-	ov := reflect.ValueOf(obj)
-	v := reflect.Indirect(ov)
-	t := v.Type()
-
-	tName := t.Name()
-	//结构体首字母转换为小写
-	//结构体首字母大写是为了供其他包访问,数据库则不用
-	tName = strings.ToLower(tName)
+	structInfo := GetStructInfo(obj)
+	tName := structInfo.TableName
 
 	sqlStr = "select "
 
-	//拼接需要查询的字段
-	for i := 0; i < t.NumField(); i++ {
-		fieldName := t.Field(i).Name
-		fieldValue := v.FieldByName(fieldName)
-		//字符串反驼峰转换,例如 UserName 会变成 user_name
-		fieldName = gutils.UnCamelCase(fieldName)
-		sqlStr += fieldName + ","
+	for _, v := range structInfo.FieldsMap {
+		sqlStr += v.tableFieldName + ","
 		//如果查询属性的值为零值得话 不写进where查询里
-		if !gutils.IsZero(fieldValue) {
-			whereStr += fieldName + "=" + gutils.Parse(fieldValue) + " and "
+		if !gutils.IsZero(v.value) {
+			whereStr += v.tableFieldName + "=" + v.stringValue + " and "
 		}
-
 	}
+
 	//trim掉逗号和and
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName + " where " + strings.TrimRight(whereStr, "and ")
 	//trim掉空格
@@ -57,27 +44,19 @@ func parseQuerySql(obj interface{}) string {
 
 
 //根据结构体生成查询sql
-func parseQueryAllSql(value reflect.Value) string {
+func parseQueryAllSql(obj interface{}) string {
 
 	var sqlStr string = ""
 	//获得反射信息
-	v := reflect.Indirect(value)
-	t := v.Type()
-
-	tName := t.Name()
-	//结构体首字母转换为小写
-	//结构体首字母大写是为了供其他包访问,数据库则不用
-	tName = strings.ToLower(tName)
+	structInfo := GetStructInfo(obj)
+	tName := structInfo.TableName
 
 	sqlStr = "select "
 
-	//拼接需要查询的字段
-	for i := 0; i < t.NumField(); i++ {
-		fieldName := t.Field(i).Name
-		//字符串反驼峰转换,例如 UserName 会变成 user_name
-		fieldName = gutils.UnCamelCase(fieldName)
-		sqlStr += fieldName + ","
+	for _, v := range structInfo.FieldsMap {
+		sqlStr += v.tableFieldName + ","
 	}
+
 	//trim掉逗号和and
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName
 
@@ -96,15 +75,11 @@ func parseSaveSql(obj interface{}) string {
 	var sqlStr string = ""
 
 	//获得类型的信息
-	t := reflect.TypeOf(obj).Elem()
-	v := reflect.ValueOf(obj).Elem()
-	tName := t.Name()
-	//结构体首字母转换为小写
-	//结构体首字母大写是为了供其他包访问,数据库则不用
-	tName = strings.ToLower(tName)
+	structInfo := GetStructInfo(obj)
+	tName := structInfo.TableName
 
 	//取id得值判断是insert 还是 update
-	id := gutils.Parse(v.FieldByName("Id"))
+	id := structInfo.FieldsMap["Id"].stringValue
 	if "0" == id {
 		isInsert = true
 	}
@@ -112,21 +87,17 @@ func parseSaveSql(obj interface{}) string {
 		//拼sql
 		sqlStr = "insert into " + tName + "("
 		var valueStr string
-		//获得所有字段名
-		numField := t.NumField()
-		for i := 0; i < numField; i++ {
-			fieldName := t.Field(i).Name
-			unCamelFieldName := gutils.UnCamelCase(fieldName)
-			sqlStr += unCamelFieldName + ","
-			value := gutils.Parse(v.FieldByName(fieldName))
-			//如果遇到id字段,则用default代替id的值, 实现自动自增
-			if "Id" == t.Field(i).Name {
+
+		//拼sql
+		for _, v := range structInfo.FieldsMap {
+			sqlStr += v.tableFieldName + ","
+			if "Id" == v.name {
 				valueStr += "default,"
 			} else {
-				valueStr += value + ","
+				valueStr += v.stringValue + ","
 			}
-
 		}
+
 		//去掉右边的逗号
 		sqlStr = strings.TrimRight(sqlStr, ",")
 		sqlStr += ") values("
@@ -135,21 +106,19 @@ func parseSaveSql(obj interface{}) string {
 		sqlStr += ")"
 	} else {
 		sqlStr = "update " + tName + " set "
-		//获得所有字段名
-		numField := t.NumField()
-		for i := 0; i < numField; i++ {
 
-			fieldName := t.Field(i).Name
-			unCamelFieldName := gutils.UnCamelCase(fieldName)
-			if "Id" == fieldName {
+		//拼sql
+		for _, v := range structInfo.FieldsMap {
+			if "Id" == v.name {
 				continue
 			} else {
-
-				sqlStr += unCamelFieldName + "=" + gutils.Parse(v.FieldByName(fieldName)) + ","
-
+				//如果属性为零值则不更新
+				if !gutils.IsZero(v.value) {
+					sqlStr += v.tableFieldName + "=" + v.stringValue + ","
+				}
 			}
-
 		}
+
 		sqlStr = strings.TrimRight(sqlStr, ",") + " where id = " + id
 
 	}
@@ -166,17 +135,13 @@ func parseDeleteSql(obj interface{}) string {
 	//用于存放sql字段
 	var sqlStr string = ""
 	//获得类型的信息
-	t := reflect.TypeOf(obj).Elem()
-	v := reflect.ValueOf(obj).Elem()
-	tName := t.Name()
-	//结构体首字母转换为小写
-	//结构体首字母大写是为了供其他包访问,数据库则不用
-	tName = strings.ToLower(tName)
+	structInfo := GetStructInfo(obj)
+	tName := structInfo.TableName
 
 	//获得要删除的id
-	id := gutils.Parse(v.FieldByName("Id"))
+	id := structInfo.FieldsMap["Id"].stringValue
 	if "0" == id {
-		errors.New("id is null")
+		panic(NOT_FOUND_ID)
 	}
 	//拼sql
 	sqlStr = "delete from " + tName + " where id = " + id

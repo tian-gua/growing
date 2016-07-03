@@ -118,7 +118,7 @@ func QueryAll(target interface{}) error {
 	element := vSlice.Slice(0, 1).Index(0)
 	elementType := element.Type()
 	//生成sql
-	sqlStr := parseQueryAllSql(element)
+	sqlStr := parseQueryAllSql(element.Interface())
 
 	//查询
 	rows, err := gdb.Query(sqlStr)
@@ -157,7 +157,7 @@ func QueryAll(target interface{}) error {
 		index++
 	}
 	//更新target的值
-	reflect.ValueOf(target).Elem().Set(targetV.Slice(0,index))
+	reflect.ValueOf(target).Elem().Set(targetV.Slice(0, index))
 	return nil
 
 }

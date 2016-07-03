@@ -10,23 +10,21 @@ var StructInfoMap = make(map[reflect.Type]*StructInfo)
 
 //结构体信息
 type StructInfo struct {
-	fields          []StructField
-	name            string
-	tableName       string
-	tableFieldNames []string
-	fieldNames      []string
-	subStructInfo   []StructInfo
+	FieldsMap       map[string]StructField //字段字典集合
+	Name            string                 //类型名
+	TableName       string                 //表名
+	TableFieldNames []string               //表字段集合
+	FieldNames      []string               //属性名称集合
+	SubStructInfo   []StructInfo           //子结构体
 }
 
 //结构体字段信息
 type StructField struct {
-	name           string
-	tableFieldName string
-	tableFieldType string
-}
-
-func (this *StructInfo) Get() {
-	fmt.Printf("%#v", this)
+	name           string        //字段名
+	value          reflect.Value //字段值
+	stringValue    string        //字符串值
+	tableFieldName string        //表属性名
+	tableFieldType string        //表属性类型
 }
 
 //获得结构体的信息
@@ -41,14 +39,14 @@ func GetStructInfo(target interface{}) *StructInfo {
 		return nil
 	}
 
-	info = GetValueInfo(t)
+	info = GetReflectInfo(t, v)
 
 	return info
 
 }
 
 //获得结构体的反射的信息
-func GetValueInfo(t reflect.Type) *StructInfo {
+func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 	var info *StructInfo
 	//从map里取结构体信息,如果map没有则新建一个然后存map
 	if value, ok := StructInfoMap[t]; ok {
@@ -57,27 +55,31 @@ func GetValueInfo(t reflect.Type) *StructInfo {
 		tableName := gutils.UnCamelCase(t.Name())
 		tableFieldNames := new([]string)
 		subStructInfo := new([]StructInfo)
-		fields := new([]StructField)
+		fieldsMap := make(map[string]StructField)
 		fieldNames := new([]string)
 
 		for index := 0; index < t.NumField(); index++ {
 			sf := t.Field(index)
+			sfv := v.Field(index)
 			t := sf.Type
-			if t.Kind() == reflect.Struct {
+			//判断属性是否为结构体
+			if sf.Type.Kind() == reflect.Struct {
 				//递归获得子结构体信息
-				*subStructInfo = append(*subStructInfo, *GetValueInfo(t))
+				*subStructInfo = append(*subStructInfo, *GetReflectInfo(sf.Type, sfv))
 			} else {
 				sf := StructField{
 					name:sf.Name,
 					tableFieldName:gutils.UnCamelCase(sf.Name),
-					tableFieldType:gutils.GetDBType(t.Kind().String())}
-				*fields = append(*fields, sf)
+					tableFieldType:gutils.GetDBType(t.Kind().String()),
+					value:sfv,
+					stringValue:gutils.ParseValueToString(sfv)}
+				fieldsMap[sf.name] = sf
 				*fieldNames = append(*fieldNames, sf.name)
 				*tableFieldNames = append(*tableFieldNames, gutils.UnCamelCase(sf.name))
 			}
 
 		}
-		info = &StructInfo{name:t.Name(), tableName:tableName, fields:*fields, tableFieldNames:*tableFieldNames, fieldNames:*fieldNames, subStructInfo:*subStructInfo }
+		info = &StructInfo{Name:t.Name(), TableName:tableName, FieldsMap:fieldsMap, TableFieldNames:*tableFieldNames, FieldNames:*fieldNames, SubStructInfo:*subStructInfo }
 		StructInfoMap[t] = info
 	}
 	return info
