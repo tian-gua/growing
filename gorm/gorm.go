@@ -62,7 +62,6 @@ func Query(obj, target interface{}) error {
 	tv := reflect.Indirect(reflect.ValueOf(obj))
 	t := tv.Type()
 	targetVlaue := reflect.Indirect(reflect.ValueOf(target))
-
 	sqlStr := parseQuerySql(obj)
 
 	//查询
@@ -111,11 +110,8 @@ func Query(obj, target interface{}) error {
 func QueryAll(target interface{}) error {
 	//获得target的反射信息
 	targetV := reflect.Indirect(reflect.ValueOf(target))
-	t := targetV.Type()
-	//给切片元素开辟一个空间
-	vSlice := reflect.MakeSlice(t, 1, 1)
 	//获得 切片元素 的反射信息
-	element := vSlice.Slice(0, 1).Index(0)
+	element := getEmptySliceValue(targetV)
 	elementType := element.Type()
 	//生成sql
 	sqlStr := parseQueryAllSql(element.Interface())
@@ -163,16 +159,66 @@ func QueryAll(target interface{}) error {
 }
 
 
-//执行之定义sql
-//func customQuery(sql) interface{} {
-//
-//
-//
-//
-//
-//	return nil
-//
-//}
+//执行之定义sql查询语句
+func CustomQuery(sqlStr string, target interface{}) error {
+	//获得target的反射信息
+	targetV := reflect.Indirect(reflect.ValueOf(target))
+
+	elementType := getEmptySliceValue(targetV).Type()
+
+	//查询
+	rows, err := gdb.Query(sqlStr)
+	if err != nil {
+		return err
+	}
+
+	//获得所有列
+	columns, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	//获得列的数量
+	colNum := len(columns)
+
+	values := make([]sql.RawBytes, colNum)
+	scans := make([]interface{}, colNum)
+	//封装
+	for i := range values {
+		scans[i] = &values[i]
+	}
+	var index int = 0
+	//遍历所有记录
+	for rows.Next() {
+		err := rows.Scan(scans...)
+		if err != nil {
+			return err
+		}
+		//根据反射来新建一个和记录对应的对象
+		var newV = reflect.New(elementType).Elem()
+		for i := 0; i < colNum; i++ {
+
+			setValue(newV.Field(i), values[i])
+		}
+		targetV = reflect.Append(targetV, newV)
+		index++
+	}
+	//更新target的值
+	reflect.ValueOf(target).Elem().Set(targetV.Slice(0, index))
+	return nil
+
+}
+
+
+//获得空切片元素的类型
+func getEmptySliceValue(slice reflect.Value) reflect.Value {
+	t := slice.Type()
+	//给切片元素开辟一个空间
+	vSlice := reflect.MakeSlice(t, 1, 1)
+	//获得 切片元素 的反射信息
+	element := vSlice.Slice(0, 1).Index(0)
+	return element
+
+}
 
 
 //关闭DB对象
