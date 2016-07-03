@@ -26,7 +26,7 @@ func IsZero(v reflect.Value) bool {
 
 
 //将接受的反射的值 转为 字符换类型
-func Parse(v reflect.Value) string {
+func ParseValueToString(v reflect.Value) string {
 	var result string
 	//根据值得类型转换字符串
 	switch v.Kind() {
