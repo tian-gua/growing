@@ -47,18 +47,36 @@ func GetStructInfo(target interface{}) *StructInfo {
 
 //获得结构体的反射的信息
 func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
+
+	var haveCache bool = false
+	var cache *StructInfo
 	var info *StructInfo
+	var tableName string
+	var tName string
+	tableFieldNames := new([]string)
+	fieldNames := new([]string)
+	subStructInfo := new([]StructInfo)
+	fieldsMap := make(map[string]StructField)
+
 	//从map里取结构体信息,如果map没有则新建一个然后存map
 	if value, ok := StructInfoMap[t]; ok {
-		info = value
-		fieldsMap := make(map[string]StructField)
-		for index := 0; index < t.NumField(); index++ {
-			sf := t.Field(index)
-			sfv := v.Field(index)
-			t := sf.Type
-			//判断属性是否为结构体
-			if sf.Type.Kind() == reflect.Struct {
-			} else {
+		haveCache = true
+		cache = value
+	}
+
+	//遍历所有属性
+	for index := 0; index < t.NumField(); index++ {
+		sf := t.Field(index)
+		sfv := v.Field(index)
+		t := sf.Type
+		//判断属性是否为结构体
+		if sf.Type.Kind() == reflect.Struct {
+			//递归获得子结构体信息
+			*subStructInfo = append(*subStructInfo, *GetReflectInfo(sf.Type, sfv))
+		} else {
+
+			//如果有缓存则只更新StructField的value
+			if !haveCache {
 				sf := StructField{
 					name:sf.Name,
 					tableFieldName:gutils.UnCamelCase(sf.Name),
@@ -66,40 +84,27 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 					value:sfv,
 					stringValue:gutils.ParseValueToString(sfv)}
 				fieldsMap[sf.name] = sf
-			}
-		}
-		info.FieldsMap = fieldsMap
 
-	} else {
-		tableName := gutils.UnCamelCase(t.Name())
-		tableFieldNames := new([]string)
-		subStructInfo := new([]StructInfo)
-		fieldsMap := make(map[string]StructField)
-		fieldNames := new([]string)
-
-		for index := 0; index < t.NumField(); index++ {
-			sf := t.Field(index)
-			sfv := v.Field(index)
-			t := sf.Type
-			//判断属性是否为结构体
-			if sf.Type.Kind() == reflect.Struct {
-				//递归获得子结构体信息
-				*subStructInfo = append(*subStructInfo, *GetReflectInfo(sf.Type, sfv))
-			} else {
-				sf := StructField{
-					name:sf.Name,
-					tableFieldName:gutils.UnCamelCase(sf.Name),
-					tableFieldType:gutils.GetDBType(t.Kind().String()),
-					value:sfv,
-					stringValue:gutils.ParseValueToString(sfv)}
-				fieldsMap[sf.name] = sf
 				*fieldNames = append(*fieldNames, sf.name)
 				*tableFieldNames = append(*tableFieldNames, gutils.UnCamelCase(sf.name))
+			} else {
+				fieldsMap[sf.Name].value = sfv
 			}
-
 		}
-		info = &StructInfo{Name:t.Name(), TableName:tableName, FieldsMap:fieldsMap, TableFieldNames:*tableFieldNames, FieldNames:*fieldNames, SubStructInfo:*subStructInfo }
-		StructInfoMap[t] = info
 	}
+
+	if haveCache {
+		tableName = cache.TableName
+		*fieldNames = cache.FieldNames
+		*tableFieldNames = cache.TableFieldNames
+		tName = cache.Name
+	} else {
+		tableName = gutils.UnCamelCase(t.Name())
+		tName = t.Name()
+	}
+
+	info = &StructInfo{Name:tName, TableName:tableName, FieldsMap:fieldsMap, TableFieldNames:*tableFieldNames, FieldNames:*fieldNames, SubStructInfo:*subStructInfo }
+	StructInfoMap[t] = info
+
 	return info
 }
