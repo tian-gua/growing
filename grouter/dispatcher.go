@@ -7,6 +7,7 @@ import (
 func init() {
 	//所有请求先走dispath方法
 	http.HandleFunc("/", dispath)
+	http.HandleFunc("/static/", http.FileServer(http.Dir("./template")).ServeHTTP)
 }
 
 
