@@ -10,12 +10,10 @@ var StructInfoMap = make(map[reflect.Type]*StructInfo)
 
 //结构体信息
 type StructInfo struct {
-	FieldsMap       map[string]StructField //字段字典集合
-	Name            string                 //类型名
-	TableName       string                 //表名
-	TableFieldNames []string               //表字段集合
-	FieldNames      []string               //属性名称集合
-	SubStructInfo   []StructInfo           //子结构体
+	FieldsMap     map[string]StructField //字段字典集合
+	Name          string                 //类型名
+	TableName     string                 //表名
+	SubStructInfo []StructInfo           //子结构体
 }
 
 //结构体字段信息
@@ -53,8 +51,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 	var info *StructInfo
 	var tableName string
 	var tName string
-	tableFieldNames := new([]string)
-	fieldNames := new([]string)
+
 	subStructInfo := new([]StructInfo)
 	fieldsMap := make(map[string]StructField)
 
@@ -74,7 +71,6 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			//递归获得子结构体信息
 			*subStructInfo = append(*subStructInfo, *GetReflectInfo(sf.Type, sfv))
 		} else {
-
 			//如果有缓存则只更新StructField的value
 			sf := StructField{
 				name:sf.Name,
@@ -83,24 +79,17 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 				value:sfv,
 				stringValue:gutils.ParseValueToString(sfv)}
 			fieldsMap[sf.name] = sf
-			if !haveCache {
-				*fieldNames = append(*fieldNames, sf.name)
-				*tableFieldNames = append(*tableFieldNames, gutils.UnCamelCase(sf.name))
-			}
 		}
 	}
 
 	if haveCache {
 		tableName = cache.TableName
-		*fieldNames = cache.FieldNames
-		*tableFieldNames = cache.TableFieldNames
 		tName = cache.Name
 	} else {
 		tableName = gutils.UnCamelCase(t.Name())
 		tName = t.Name()
 	}
-
-	info = &StructInfo{Name:tName, TableName:tableName, FieldsMap:fieldsMap, TableFieldNames:*tableFieldNames, FieldNames:*fieldNames, SubStructInfo:*subStructInfo }
+	info = &StructInfo{Name:tName, TableName:tableName, FieldsMap:fieldsMap, SubStructInfo:*subStructInfo }
 	StructInfoMap[t] = info
 
 	return info
