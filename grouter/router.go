@@ -1,16 +1,24 @@
 package grouter
 
-import "net/http"
+import "strings"
 
-//将url 和 控制器 映射到一起
-func Route(requestMapping string, c Controller) {
-	//将控制器和url通过map关联
-	dpc.mappings[requestMapping] = c
+//将url 和 处理器 映射到一起
+func Route(requestMapping string, h handler, method ...string) {
+
+	//如果不指定方法,get和post请求都进行处理
+	if len(method) == 0 {
+		baseController.addGet(requestMapping, h)
+		baseController.addPost(requestMapping, h)
+	}
+
+	m := method[0]
+	if strings.ToUpper(m) == "POST" {
+		baseController.addPost(requestMapping, h)
+
+	} else if strings.ToUpper(m) == "GET" {
+		baseController.addGet(requestMapping, h)
+	}
 
 }
 
-func init() {
-	//所有请求先走dispath方法
-	http.HandleFunc("/", dpc.dispath)
-}
 
