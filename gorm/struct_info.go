@@ -47,7 +47,7 @@ func GetStructInfo(target interface{}) *StructInfo {
 
 //获得结构体的反射的信息
 func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
-
+	//是否有缓存
 	var haveCache bool = false
 	var cache *StructInfo
 	var info *StructInfo
@@ -76,19 +76,16 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 		} else {
 
 			//如果有缓存则只更新StructField的value
+			sf := StructField{
+				name:sf.Name,
+				tableFieldName:gutils.UnCamelCase(sf.Name),
+				tableFieldType:gutils.GetDBType(t.Kind().String()),
+				value:sfv,
+				stringValue:gutils.ParseValueToString(sfv)}
+			fieldsMap[sf.name] = sf
 			if !haveCache {
-				sf := StructField{
-					name:sf.Name,
-					tableFieldName:gutils.UnCamelCase(sf.Name),
-					tableFieldType:gutils.GetDBType(t.Kind().String()),
-					value:sfv,
-					stringValue:gutils.ParseValueToString(sfv)}
-				fieldsMap[sf.name] = sf
-
 				*fieldNames = append(*fieldNames, sf.name)
 				*tableFieldNames = append(*tableFieldNames, gutils.UnCamelCase(sf.name))
-			} else {
-				fieldsMap[sf.Name].value = sfv
 			}
 		}
 	}
