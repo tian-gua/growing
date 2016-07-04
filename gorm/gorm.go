@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"reflect"
+	"github.com/aidonggua/growing/gutils"
 )
 
 //数据库连接对象
@@ -94,8 +95,8 @@ func Query(obj, target interface{}) error {
 		//根据反射来新建一个和记录对应的对象
 		var newV = reflect.New(t).Elem()
 		for i := 0; i < colNum; i++ {
-
-			setValue(newV.Field(i), values[i])
+			colName := columns[i]
+			setValue(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
 		}
 		targetVlaue = reflect.Append(targetVlaue, newV)
 		index++
@@ -146,8 +147,8 @@ func QueryAll(target interface{}) error {
 		//根据反射来新建一个和记录对应的对象
 		var newV = reflect.New(elementType).Elem()
 		for i := 0; i < colNum; i++ {
-
-			setValue(newV.Field(i), values[i])
+			colName := columns[i]
+			setValue(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
 		}
 		targetV = reflect.Append(targetV, newV)
 		index++
@@ -196,8 +197,8 @@ func CustomQuery(sqlStr string, target interface{}) error {
 		//根据反射来新建一个和记录对应的对象
 		var newV = reflect.New(elementType).Elem()
 		for i := 0; i < colNum; i++ {
-
-			setValue(newV.Field(i), values[i])
+			colName := columns[i]
+			setValue(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
 		}
 		targetV = reflect.Append(targetV, newV)
 		index++
