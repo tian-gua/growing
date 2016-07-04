@@ -51,6 +51,25 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 	//从map里取结构体信息,如果map没有则新建一个然后存map
 	if value, ok := StructInfoMap[t]; ok {
 		info = value
+		fieldsMap := make(map[string]StructField)
+		for index := 0; index < t.NumField(); index++ {
+			sf := t.Field(index)
+			sfv := v.Field(index)
+			t := sf.Type
+			//判断属性是否为结构体
+			if sf.Type.Kind() == reflect.Struct {
+			} else {
+				sf := StructField{
+					name:sf.Name,
+					tableFieldName:gutils.UnCamelCase(sf.Name),
+					tableFieldType:gutils.GetDBType(t.Kind().String()),
+					value:sfv,
+					stringValue:gutils.ParseValueToString(sfv)}
+				fieldsMap[sf.name] = sf
+			}
+		}
+		info.FieldsMap = fieldsMap
+
 	} else {
 		tableName := gutils.UnCamelCase(t.Name())
 		tableFieldNames := new([]string)
