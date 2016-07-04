@@ -9,14 +9,14 @@ func Route(requestMapping string, h handler, method ...string) {
 	if len(method) == 0 {
 		baseController.addGet(requestMapping, h)
 		baseController.addPost(requestMapping, h)
-	}
+	}else {
+		m := method[0]
+		if strings.ToUpper(m) == "POST" {
+			baseController.addPost(requestMapping, h)
 
-	m := method[0]
-	if strings.ToUpper(m) == "POST" {
-		baseController.addPost(requestMapping, h)
-
-	} else if strings.ToUpper(m) == "GET" {
-		baseController.addGet(requestMapping, h)
+		} else if strings.ToUpper(m) == "GET" {
+			baseController.addGet(requestMapping, h)
+		}
 	}
 
 }
