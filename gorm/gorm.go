@@ -19,7 +19,11 @@ func Save(obj interface{}) error {
 	sqlStr := parseSaveSql(obj)
 
 	//执行sql
-	result, err := gdb.Exec(sqlStr)
+	stmt, err := gdb.Prepare(sqlStr)
+	if err != nil {
+		return err
+	}
+	result, err := stmt.Exec(sqlStr)
 	if err != nil {
 		return err
 	}
@@ -42,7 +46,11 @@ func Delete(obj interface{}) error {
 	//生成sql
 	sqlStr := parseDeleteSql(obj)
 	//执行sql
-	result, err := gdb.Exec(sqlStr)
+	stmt, err := gdb.Prepare(sqlStr)
+	if err != nil {
+		return err
+	}
+	result, err := stmt.Exec(sqlStr)
 	if err != nil {
 		return err
 	}
