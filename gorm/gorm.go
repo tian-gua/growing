@@ -73,12 +73,16 @@ func Query(obj, target interface{}) error {
 	targetVlaue := reflect.Indirect(reflect.ValueOf(target))
 	sqlStr := parseQuerySql(obj)
 
-	//查询
-	rows, err := gdb.Query(sqlStr)
+	//执行sql
+	stmt, err := gdb.Prepare(sqlStr)
 	if err != nil {
 		return err
 	}
-
+	//查询
+	rows, err := stmt.Query(sqlStr)
+	if err != nil {
+		return err
+	}
 	//获得所有列
 	columns, err := rows.Columns()
 	if err != nil {
@@ -124,13 +128,16 @@ func QueryAll(target interface{}) error {
 	elementType := element.Type()
 	//生成sql
 	sqlStr := parseQueryAllSql(element.Interface())
-
-	//查询
-	rows, err := gdb.Query(sqlStr)
+	//执行sql
+	stmt, err := gdb.Prepare(sqlStr)
 	if err != nil {
 		return err
 	}
-
+	//查询
+	rows, err := stmt.Query(sqlStr)
+	if err != nil {
+		return err
+	}
 	//获得所有列
 	columns, err := rows.Columns()
 	if err != nil {
@@ -172,9 +179,13 @@ func QueryAll(target interface{}) error {
 func CustomQuery(sqlStr string, target interface{}) error {
 	//获得target的反射信息
 	targetV := reflect.Indirect(reflect.ValueOf(target))
-
+	//执行sql
+	stmt, err := gdb.Prepare(sqlStr)
+	if err != nil {
+		return err
+	}
 	//查询
-	rows, err := gdb.Query(sqlStr)
+	rows, err := stmt.Query(sqlStr)
 	if err != nil {
 		return err
 	}
