@@ -13,16 +13,25 @@ var gdb *sql.DB = nil
 
 //插入或者更新一条记录
 //插入和更新取决于 id 字段是否为0
-func Save(obj interface{}) error {
-
+func Save(obj interface{}, gtx ...*Transaction) error {
+	var stmt *sql.Stmt
+	var err error
 	//生成sql
 	sqlStr := parseSaveSql(obj)
-
-	//执行sql
-	stmt, err := gdb.Prepare(sqlStr)
-	if err != nil {
-		return err
+	//判断是否在事务中执行
+	if len(gtx) > 0 {
+		stmt, err = gtx[0].tx.Prepare(sqlStr)
+		if err != nil {
+			return err
+		}
+	} else {
+		//从sql.DB里获得stmt
+		stmt, err = gdb.Prepare(sqlStr)
+		if err != nil {
+			return err
+		}
 	}
+	defer stmt.Close()
 	result, err := stmt.Exec()
 	if err != nil {
 		return err
@@ -41,15 +50,14 @@ func Save(obj interface{}) error {
 
 
 //删除一条记录
-func Delete(obj interface{}) error {
-
+func Delete(obj interface{}, gtx ...*Transaction) error {
 	//生成sql
-	sqlStr := parseDeleteSql(obj)
-	//执行sql
-	stmt, err := gdb.Prepare(sqlStr)
+	sqlStr := parseSaveSql(obj)
+	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	result, err := stmt.Exec()
 	if err != nil {
 		return err
@@ -66,23 +74,22 @@ func Delete(obj interface{}) error {
 
 
 //查询记录
-func Query(obj, target interface{}) error {
-
+func Query(obj, target interface{}, gtx ...*Transaction) error {
 	tv := reflect.Indirect(reflect.ValueOf(obj))
 	t := tv.Type()
 	targetVlaue := reflect.Indirect(reflect.ValueOf(target))
 	sqlStr := parseQuerySql(obj)
-
-	//执行sql
-	stmt, err := gdb.Prepare(sqlStr)
+	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	//查询
 	rows, err := stmt.Query()
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	//获得所有列
 	columns, err := rows.Columns()
 	if err != nil {
@@ -120,7 +127,7 @@ func Query(obj, target interface{}) error {
 }
 
 //查询所有记录
-func QueryAll(target interface{}) error {
+func QueryAll(target interface{}, gtx ...*Transaction) error {
 	//获得target的反射信息
 	targetV := reflect.Indirect(reflect.ValueOf(target))
 	//获得 切片元素 的反射信息
@@ -128,16 +135,17 @@ func QueryAll(target interface{}) error {
 	elementType := element.Type()
 	//生成sql
 	sqlStr := parseQueryAllSql(element.Interface())
-	//执行sql
-	stmt, err := gdb.Prepare(sqlStr)
+	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	//查询
 	rows, err := stmt.Query()
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	//获得所有列
 	columns, err := rows.Columns()
 	if err != nil {
@@ -176,19 +184,20 @@ func QueryAll(target interface{}) error {
 
 
 //执行之定义sql查询语句
-func CustomQuery(sqlStr string, target interface{}) error {
+func CustomQuery(sqlStr string, target interface{}, gtx ...*Transaction) error {
 	//获得target的反射信息
 	targetV := reflect.Indirect(reflect.ValueOf(target))
-	//执行sql
-	stmt, err := gdb.Prepare(sqlStr)
+	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	//查询
 	rows, err := stmt.Query()
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	//获得所有列
 	columns, err := rows.Columns()
 	if err != nil {
@@ -261,7 +270,26 @@ func getEmptySliceValue(slice reflect.Value) reflect.Value {
 	//获得 切片元素 的反射信息
 	element := vSlice.Slice(0, 1).Index(0)
 	return element
+}
 
+//获得statement,有事务和非事务2种情况
+func getStatement(sqlStr string, gtx ...*Transaction) (*sql.Stmt, error) {
+	var stmt *sql.Stmt
+	var err error
+	//判断是否在事务中执行
+	if len(gtx) > 0 {
+		stmt, err = gtx[0].tx.Prepare(sqlStr)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		//从sql.DB里获得stmt
+		stmt, err = gdb.Prepare(sqlStr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return stmt, err
 }
 
 
