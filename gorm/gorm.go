@@ -23,7 +23,7 @@ func Save(obj interface{}) error {
 	if err != nil {
 		return err
 	}
-	result, err := stmt.Exec(sqlStr)
+	result, err := stmt.Exec()
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func Delete(obj interface{}) error {
 	if err != nil {
 		return err
 	}
-	result, err := stmt.Exec(sqlStr)
+	result, err := stmt.Exec()
 	if err != nil {
 		return err
 	}
