@@ -79,7 +79,7 @@ func Query(obj, target interface{}) error {
 		return err
 	}
 	//查询
-	rows, err := stmt.Query(sqlStr)
+	rows, err := stmt.Query()
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func QueryAll(target interface{}) error {
 		return err
 	}
 	//查询
-	rows, err := stmt.Query(sqlStr)
+	rows, err := stmt.Query()
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func CustomQuery(sqlStr string, target interface{}) error {
 		return err
 	}
 	//查询
-	rows, err := stmt.Query(sqlStr)
+	rows, err := stmt.Query()
 	if err != nil {
 		return err
 	}
