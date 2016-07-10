@@ -56,7 +56,7 @@ func (c *controller)  post(pattern string, rw http.ResponseWriter, req *http.Req
 }
 //trim掉&后面的参数
 func TrimParameter(url string) string {
-	reg, err := regexp.Compile(".*\\?")
+	reg, err := regexp.Compile(".*\\??")
 	if err != nil {
 		fmt.Println(err)
 		return url
