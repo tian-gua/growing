@@ -99,11 +99,13 @@ func do(rw http.ResponseWriter, req *http.Request, h handler) {
 					case reflect.String:
 						sfv.SetString(req.FormValue(sf.Name))
 					case reflect.Int:
-						conv, err := strconv.Atoi(req.FormValue(sf.Name))
-						if err != nil {
-							fmt.Println(err)
-						} else {
-							sfv.SetInt(int64(conv))
+						if formv := req.FormValue(sf.Name); len(formv) != 0 {
+							conv, err := strconv.Atoi(formv)
+							if err != nil {
+								fmt.Println(err)
+							} else {
+								sfv.SetInt(int64(conv))
+							}
 						}
 					default:
 						fmt.Println("注入参数失败!")
