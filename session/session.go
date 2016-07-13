@@ -3,19 +3,19 @@ package gsession
 import (
 	"net/http"
 	"time"
-	"errors"
 	"cache"
+	"fmt"
 )
 
 //session对象
 type Session struct {
-	list map[string]interface{}
+	attributes map[string]interface{}
 }
 
 //获取session的值
 func (s *Session) Get(key string) interface{} {
 
-	if k, ok := s.list[key]; ok {
+	if k, ok := s.attributes[key]; ok {
 		return k
 	}
 	return nil
@@ -24,44 +24,40 @@ func (s *Session) Get(key string) interface{} {
 //存放值到session对象里
 func (s *Session) Put(key string, value interface{}) {
 
-	s.list[key] = value
+	s.attributes[key] = value
 
 }
-
-
-//默认缓存存在30分钟
-var expires time.Duration = 1000 * 60 * 30
 
 //获取Session对象
-func GetSession(req http.Request) (*Session, error) {
+func GetSession(rw http.ResponseWriter, req *http.Request) (*Session, error) {
 	//获得sessionid的cookie
 	cookie, err := req.Cookie("gsessionid")
+	fmt.Println(err)
 	if err != nil {
-		return nil, err
+		//如果请求不存在 gsessionid 则添加一个sessionid过去
+		if err == http.ErrNoCookie {
+			return newSession(rw)
+		}
 	}
-	//如果请求不存在 gsessionid 则添加一个sessionid过去
-	if cookie == nil {
-		ck := &http.Cookie{Name:"gsessionid", Value:"gsession", Expires:time.Now().Add(expires) }
-		req.AddCookie(ck)
-		//新建一个session对象
-		newSession := &Session{list:make(map[string]interface{})}
-		//新session放缓存里
-		gcache.Put("gsession", newSession, 888888)
-		return newSession, nil
-
-	} else {
-		//判断gsession是否过期
-		if time.Now().After(cookie.Expires) {
-			return nil, errors.New("expired")
-		}
-		session, err := gcache.Get(cookie.Value)
-		if err != nil {
-			return nil, err
-		}
-		return session.(*Session), nil
+	session := gcache.Get(cookie.Value)
+	//如果session为空证明session过期了
+	if session == nil {
+		return newSession(rw)
 	}
 
+	return session.(*Session), nil
 }
 
 
+//新建一个session
+func newSession(rw http.ResponseWriter) (*Session, error) {
+	sessionId := getSessionId()
+	ck := &http.Cookie{Name:"gsessionid", Value:sessionId, MaxAge:0, Path:"/", HttpOnly:true }
+	http.SetCookie(rw, ck)
+	//新建一个session对象
+	newSession := &Session{attributes:make(map[string]interface{})}
+	//新session放缓存里
+	gcache.Put(sessionId, newSession, time.Now().Add(30 * time.Minute), gcache.IdleMode)
+	return newSession, nil
+}
 
