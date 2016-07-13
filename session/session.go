@@ -30,7 +30,7 @@ func (s *Session) Put(key string, value interface{}) {
 
 
 //默认缓存存在30分钟
-var expires = 1000 * 60 * 30
+var expires time.Duration = 1000 * 60 * 30
 
 //获取Session对象
 func GetSession(req http.Request) (*Session, error) {
@@ -52,10 +52,13 @@ func GetSession(req http.Request) (*Session, error) {
 	} else {
 		//判断gsession是否过期
 		if time.Now().After(cookie.Expires) {
-			return errors.New("expired")
+			return nil, errors.New("expired")
 		}
-
-		return gcache.Get(cookie.Value)
+		session, err := gcache.Get(cookie.Value)
+		if err != nil {
+			return nil, err
+		}
+		return session.(*Session), nil
 	}
 
 }
