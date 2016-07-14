@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 	"cache"
-	"fmt"
 )
 
 //session对象
@@ -14,7 +13,6 @@ type Session struct {
 
 //获取session的值
 func (s *Session) Get(key string) interface{} {
-
 	if k, ok := s.attributes[key]; ok {
 		return k
 	}
@@ -23,16 +21,13 @@ func (s *Session) Get(key string) interface{} {
 
 //存放值到session对象里
 func (s *Session) Put(key string, value interface{}) {
-
 	s.attributes[key] = value
-
 }
 
 //获取Session对象
 func GetSession(rw http.ResponseWriter, req *http.Request) (*Session, error) {
 	//获得sessionid的cookie
 	cookie, err := req.Cookie("gsessionid")
-	fmt.Println(err)
 	if err != nil {
 		//如果请求不存在 gsessionid 则添加一个sessionid过去
 		if err == http.ErrNoCookie {
@@ -44,7 +39,6 @@ func GetSession(rw http.ResponseWriter, req *http.Request) (*Session, error) {
 	if session == nil {
 		return newSession(rw)
 	}
-
 	return session.(*Session), nil
 }
 
@@ -57,7 +51,7 @@ func newSession(rw http.ResponseWriter) (*Session, error) {
 	//新建一个session对象
 	newSession := &Session{attributes:make(map[string]interface{})}
 	//新session放缓存里
-	gcache.Put(sessionId, newSession, time.Now().Add(30 * time.Minute), gcache.IdleMode)
+	gcache.Put(sessionId, newSession, gcache.IdleMode, 30 * time.Minute)
 	return newSession, nil
 }
 

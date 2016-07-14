@@ -15,10 +15,9 @@ const (
 type cache struct {
 	key      string        //key 冗余一个字典的索引
 	value    interface{}   //value 使用接口实现泛型
-	putTime  time.Time     //添加时间
-	lifetime time.Time     //存活时间
+	lifetime *time.Time    //存活时间
 	mode     int           //缓存过期模式
-	modetime time.Duration //过期时间
+	idleTime time.Duration //过期时间
 }
 
 //缓存接口
@@ -37,42 +36,37 @@ var cacheManager = make(map[string]cache)
 func (this *cache) get() (interface{}, error) {
 	switch this.mode {
 	case IdleMode:
-		if this.isIdle(this.modetime) {
+		if this.isExpire() {
 			return nil, errors.New("cache is idled")
 		} else {
-			this.updateLifeTime(time.Now().Add(this.modetime))
+			this.updateLifeTime(time.Now())
 		}
 	case Expire:
-		if this.isExpire(this.modetime) {
+		if this.isExpire() {
 			return nil, errors.New("cache is expired")
 		}
 	}
 	return this.value, nil
-
 }
 
 //实现Icache接口的put方法,存数据
-func (c *cache) put(key string, value interface{}, lifetime  time.Time, mode int) {
+func (c *cache) put(key string, value interface{}, mode int, idleTime time.Duration) {
 	c.key = key
 	c.value = value
-	c.lifetime = lifetime
-	c.putTime = time.Now()
+	c.lifetime = new(time.Time)
+	*c.lifetime = time.Now()
 	c.mode = mode
+	c.idleTime = idleTime
 }
 
-//判断时候闲置
-func (this *cache) isIdle(d time.Duration) bool {
-	return time.Now().After(this.lifetime.Add(d))
-}
-
-//实现Icache接口的isExpire方发
-func (this *cache) isExpire(d time.Duration) bool {
-	return time.Now().After(this.putTime.Add(d))
+//判断时候过期
+func (this *cache) isExpire() bool {
+	return time.Now().After(this.lifetime.Add(this.idleTime))
 }
 
 //更新存货时间
 func (this *cache) updateLifeTime(t time.Time) {
-	this.lifetime = t
+	*this.lifetime = t
 }
 
 
@@ -92,12 +86,12 @@ func Get(key string) interface{} {
 
 
 //实现cache包的公共方法,用于存放数据
-func Put(key string, value interface{}, lifeTime  time.Time, mode int) {
+func Put(key string, value interface{}, mode int, idleTime time.Duration) {
 
 	//新建一个cache对象
 	newCache := &cache{}
 	//初始化cache对象
-	newCache.put(key, value, lifeTime, mode)
+	newCache.put(key, value, mode, idleTime)
 	//讲对象放到字典里
 	cacheManager[key] = *newCache
 
