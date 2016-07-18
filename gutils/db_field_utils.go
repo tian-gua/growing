@@ -15,7 +15,6 @@ func GetDBType(structType string) string {
 		dbtype = "int64"
 	case strings.HasPrefix(structType, "timestamp") || strings.HasPrefix(structType, "datetime"):
 		dbtype = "time.Time"
-
 	}
 	return dbtype
 

@@ -28,18 +28,13 @@ func ListPath(dir, fileName string) string {
 			targetPath = path
 			//println(path)
 			return errors.New("FOUND")
-
 		}
 		return nil
-
 	})
-
 	if err_ != nil {
 		fmt.Printf("filepath.Walk() returned %v\n", err_)
 	}
-
 	return targetPath
-
 }
 
 type FileInfo struct {
@@ -68,27 +63,21 @@ func FoundRepeatFile(dir string) map[string]FileInfo {
 				if v1, ok1 := repeatFile[fileName]; ok1 {
 					//添加重复的文件到 重复字典里
 					v1.FileNames = append(v1.FileNames, path)
-
 				} else {
 					//讲重名的2个文件 存放到 重复的字典里
 					v.FileNames = append(v.FileNames, path)
 					repeatFile[fileName] = v
 				}
-
 			}
-
 			fp := []string{path}
 			allFile[f.Name()] = FileInfo{fp, f.Size()}
-
 		}
 		fmt.Println(path)
-
 		return nil
 	})
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	return repeatFile
 }
 
@@ -116,7 +105,6 @@ func WriteTextToFile(path, text string) error {
 	}
 	// 执行完函数后,关闭文件
 	defer func() {
-
 		file.Close()
 	}()
 	//获得一个文件写入器
@@ -124,7 +112,6 @@ func WriteTextToFile(path, text string) error {
 	//写入text
 	writer.WriteString(text)
 	return writer.Flush()
-
 }
 
 
@@ -139,15 +126,12 @@ func ReadFileString(path string) error {
 	}
 	// 执行完函数后,关闭文件
 	defer func() {
-
 		file.Close()
 	}()
 	//获得一个Reader指针
 	reader := bufio.NewReader(file)
-
 	var str string
 	var err error
-
 	//如果文件已经读完, 会返回一个erro: EOF
 	for err == nil {
 		//循环读取文件内的字符串
@@ -155,7 +139,6 @@ func ReadFileString(path string) error {
 		fmt.Printf(str)
 	}
 	return err
-
 }
 
 
@@ -171,16 +154,12 @@ func ReadFileString2(path string) {
 	}
 	// 执行完函数后,关闭文件
 	defer func() {
-
 		file.Close()
 	}()
-
 	var buf [1021]byte
 	for {
-
 		switch num, err := file.Read(buf[:]); true {
 		case num > 0:
-
 			n, e := os.Stdout.Write(buf[:])
 			//如果读出来的数量和写进去的数量不同
 			if ( num != n) {
@@ -192,15 +171,12 @@ func ReadFileString2(path string) {
 			//如果读到的数量为负
 			panic(err)
 		}
-
 	}
-
 }
 
 
 //复制文件
 func CopyFile(from, to string) (written int64, err error) {
-
 	//获得一个文件指针
 	file_from, err := os.Open(from)
 	if err != nil {
@@ -212,8 +188,6 @@ func CopyFile(from, to string) (written int64, err error) {
 		fmt.Println("defer:关闭文件!")
 		file_from.Close()
 	}()
-
-
 	//获得一个文件指针
 	file_to, err := os.OpenFile(to, os.O_WRONLY | os.O_CREATE, 0644)
 	if err != nil {
@@ -225,7 +199,6 @@ func CopyFile(from, to string) (written int64, err error) {
 		fmt.Println("defer:关闭目标文件!")
 		file_to.Close()
 	}()
-
 	return io.Copy(file_to, file_from)
 
 }
