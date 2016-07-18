@@ -43,7 +43,6 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 	if rownum == 0 {
 		return errors.New("no record insert")
 	}
-
 	return nil
 
 }
@@ -97,7 +96,6 @@ func Query(obj, target interface{}, gtx ...*Transaction) error {
 	}
 	//获得列的数量
 	colNum := len(columns)
-
 	values := make([]sql.RawBytes, colNum)
 	scans := make([]interface{}, colNum)
 	//封装
@@ -153,7 +151,6 @@ func QueryAll(target interface{}, gtx ...*Transaction) error {
 	}
 	//获得列的数量
 	colNum := len(columns)
-
 	values := make([]sql.RawBytes, colNum)
 	scans := make([]interface{}, colNum)
 	//封装
@@ -205,7 +202,6 @@ func CustomQuery(sqlStr string, target interface{}, gtx ...*Transaction) error {
 	}
 	//获得列的数量
 	colNum := len(columns)
-
 	values := make([]sql.RawBytes, colNum)
 	scans := make([]interface{}, colNum)
 	//封装
@@ -222,7 +218,6 @@ func CustomQuery(sqlStr string, target interface{}, gtx ...*Transaction) error {
 			if err != nil {
 				return err
 			}
-
 			//根据反射来新建一个和记录对应的对象
 			var newV = reflect.New(elementType).Elem()
 			//如果切片类型为结构体

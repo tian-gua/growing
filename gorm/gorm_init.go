@@ -13,5 +13,4 @@ func InitDB(dialect, connStr string) {
 		panic(err)
 	}
 	gdb = db
-
 }

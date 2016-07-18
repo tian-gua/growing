@@ -10,15 +10,12 @@ import (
 
 //根据结构体生成查询sql
 func parseQuerySql(obj interface{}) string {
-
 	var sqlStr string = ""
 	var whereStr string = ""
 	//获得类型的信息
 	structInfo := GetStructInfo(obj)
 	tName := structInfo.TableName
-
 	sqlStr = "select "
-
 	for _, v := range structInfo.FieldsMap {
 		sqlStr += v.tableFieldName + ","
 		//如果查询属性的值为零值得话 不写进where查询里
@@ -26,18 +23,14 @@ func parseQuerySql(obj interface{}) string {
 			whereStr += v.tableFieldName + "=" + v.stringValue + " and "
 		}
 	}
-
 	//trim掉逗号和and
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName + " where " + strings.TrimRight(whereStr, "and ")
 	//trim掉空格
 	sqlStr = strings.TrimSpace(sqlStr)
 	//trim掉where
 	sqlStr = strings.Trim(sqlStr, "where")
-
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
 	return sqlStr
-
 }
 
 
@@ -45,39 +38,29 @@ func parseQuerySql(obj interface{}) string {
 
 //根据结构体生成查询sql
 func parseQueryAllSql(obj interface{}) string {
-
 	var sqlStr string = ""
 	//获得反射信息
 	structInfo := GetStructInfo(obj)
 	tName := structInfo.TableName
-
 	sqlStr = "select "
-
 	for _, v := range structInfo.FieldsMap {
 		sqlStr += v.tableFieldName + ","
 	}
-
 	//trim掉逗号和and
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName
-
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
 	return sqlStr
-
 }
 
 //根据结构体生成插入或者更新sql
 func parseSaveSql(obj interface{}) string {
-
 	//用于判断是否为插入方法
 	var isInsert bool = false
 	//用于存放sql字段
 	var sqlStr string = ""
-
 	//获得类型的信息
 	structInfo := GetStructInfo(obj)
 	tName := structInfo.TableName
-
 	//取id得值判断是insert 还是 update
 	id := structInfo.FieldsMap["Id"].stringValue
 	if "0" == id {
@@ -87,7 +70,6 @@ func parseSaveSql(obj interface{}) string {
 		//拼sql
 		sqlStr = "insert into " + tName + "("
 		var valueStr string
-
 		//拼sql
 		for _, v := range structInfo.FieldsMap {
 			sqlStr += v.tableFieldName + ","
@@ -97,7 +79,6 @@ func parseSaveSql(obj interface{}) string {
 				valueStr += v.stringValue + ","
 			}
 		}
-
 		//去掉右边的逗号
 		sqlStr = strings.TrimRight(sqlStr, ",")
 		sqlStr += ") values("
@@ -106,7 +87,6 @@ func parseSaveSql(obj interface{}) string {
 		sqlStr += ")"
 	} else {
 		sqlStr = "update " + tName + " set "
-
 		//拼sql
 		for _, v := range structInfo.FieldsMap {
 			if "Id" == v.name {
@@ -118,26 +98,19 @@ func parseSaveSql(obj interface{}) string {
 				}
 			}
 		}
-
 		sqlStr = strings.TrimRight(sqlStr, ",") + " where id = " + id
-
 	}
-
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
 	return sqlStr
-
 }
 
 //根据结构体生成删除sql
 func parseDeleteSql(obj interface{}) string {
-
 	//用于存放sql字段
 	var sqlStr string = ""
 	//获得类型的信息
 	structInfo := GetStructInfo(obj)
 	tName := structInfo.TableName
-
 	//获得要删除的id
 	id := structInfo.FieldsMap["Id"].stringValue
 	if "0" == id {
@@ -145,8 +118,6 @@ func parseDeleteSql(obj interface{}) string {
 	}
 	//拼sql
 	sqlStr = "delete from " + tName + " where id = " + id
-
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
 	return sqlStr
 }

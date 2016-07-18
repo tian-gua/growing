@@ -27,7 +27,6 @@ type StructField struct {
 
 //获得结构体的信息
 func GetStructInfo(target interface{}) *StructInfo {
-
 	var info *StructInfo
 	v := reflect.Indirect(reflect.ValueOf(target))
 	t := v.Type()
@@ -36,11 +35,8 @@ func GetStructInfo(target interface{}) *StructInfo {
 		fmt.Println(GET_STRUCTINFO_ERROR)
 		return nil
 	}
-
 	info = GetReflectInfo(t, v)
-
 	return info
-
 }
 
 //获得结构体的反射的信息
@@ -51,16 +47,13 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 	var info *StructInfo
 	var tableName string
 	var tName string
-
 	subStructInfo := new([]StructInfo)
 	fieldsMap := make(map[string]StructField)
-
 	//从map里取结构体信息,如果map没有则新建一个然后存map
 	if value, ok := StructInfoMap[t]; ok {
 		haveCache = true
 		cache = value
 	}
-
 	//遍历所有属性
 	for index := 0; index < t.NumField(); index++ {
 		sf := t.Field(index)
@@ -81,7 +74,6 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			fieldsMap[sf.name] = sf
 		}
 	}
-
 	if haveCache {
 		tableName = cache.TableName
 		tName = cache.Name
@@ -91,6 +83,5 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 	}
 	info = &StructInfo{Name:tName, TableName:tableName, FieldsMap:fieldsMap, SubStructInfo:*subStructInfo }
 	StructInfoMap[t] = info
-
 	return info
 }

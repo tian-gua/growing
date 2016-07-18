@@ -23,10 +23,8 @@ func Generate(tableName string) {
 	if err != nil {
 		panic(err)
 	}
-
 	//关闭链接
 	defer db.Close()
-
 	//查询表结构信息
 	sqlString := "desc " + tableName
 	rows, err := db.Query(sqlString)
@@ -34,16 +32,12 @@ func Generate(tableName string) {
 		panic(err)
 	}
 	defer rows.Close()
-
-
 	//获得表所有字段
 	columns, err := rows.Columns()
 	if err != nil {
 		panic(err)
 	}
-
 	colNum := len(columns)
-
 	//定义一个RawBytes切片接收所有字段的值
 	values := make([]sql.RawBytes, colNum)
 	//定义一个空接口切片用于封装RawBytes切片,Scan方法只能接收interface{}
@@ -56,9 +50,7 @@ func Generate(tableName string) {
 	fields := make([]string, 0)
 	//存放所有字段类型
 	fieldTypes := make([]string, 0)
-
 	for rows.Next() {
-
 		//读取所有的字段到 空结构体切片里
 		err := rows.Scan(scans...)
 		if err != nil {
@@ -71,7 +63,6 @@ func Generate(tableName string) {
 		ftype = gutils.GetDBType(ftype)
 		fieldTypes = append(fieldTypes, ftype)
 	}
-
 	structString := "type " + strings.Title(tableName) + " struct{\n"
 	for i, v := range fields {
 		structString += "\t" + v + "\t" + fieldTypes[i] + "\n"

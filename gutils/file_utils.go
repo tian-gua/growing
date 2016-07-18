@@ -15,7 +15,6 @@ import (
 
 //遍历文件夹  查找文件
 func ListPath(dir, fileName string) string {
-
 	targetPath := ""
 	err_ := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		if ( f == nil ) {
