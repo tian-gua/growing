@@ -20,7 +20,7 @@ func init() {
 			if err != nil {
 				panic(err)
 			}
-			Session_time = m * time.Minute
+			Session_time = time.Duration(m) * time.Minute
 			fmt.Println(Session_time)
 		}
 	}
