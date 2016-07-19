@@ -2,8 +2,7 @@ package gsession
 
 import (
 	"net/http"
-	"time"
-	"cache"
+	"github.com/aidonggua/growing/cache"
 )
 
 //session对象
