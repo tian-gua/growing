@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"io"
 )
 
 
@@ -22,7 +23,7 @@ func GetIniProperties(path string) map[string]map[string]string {
 	reader := bufio.NewReader(file)
 	var title string = "default"
 	for {
-		if line, err := reader.ReadString('\n'); err == nil || len(line) != 0{
+		if line, err := reader.ReadString('\n'); err == nil || len(line) != 0 {
 			//如果是标题
 			if t, ok := isTitle(line); ok {
 				title = t
@@ -33,7 +34,9 @@ func GetIniProperties(path string) map[string]map[string]string {
 				fmt.Println("未识别的配置:" + line)
 			}
 		} else {
-			fmt.Println(err)
+			if err != io.EOF {
+				panic(err)
+			}
 			break
 		}
 	}
@@ -57,7 +60,7 @@ func isTitle(line string) (string, bool) {
 //k=v
 func isKV(line string) ([]string, bool) {
 	var ok bool = false
-	kv := strings.Split(strings.Trim(line,"\n"), "=")
+	kv := strings.Split(strings.Trim(line, "\n"), "=")
 	if len(kv) == 2 {
 		ok = true
 	}
