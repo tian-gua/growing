@@ -51,7 +51,7 @@ func newSession(rw http.ResponseWriter) (*Session, error) {
 	//新建一个session对象
 	newSession := &Session{attributes:make(map[string]interface{})}
 	//新session放缓存里
-	gcache.Put(sessionId, newSession, gcache.IdleMode, 30 * time.Minute)
+	gcache.Put(sessionId, newSession, gcache.IdleMode, Session_time)
 	return newSession, nil
 }
 
