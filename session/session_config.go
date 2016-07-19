@@ -21,7 +21,10 @@ func init() {
 				panic(err)
 			}
 			Session_time = time.Duration(m) * time.Minute
-			fmt.Println(Session_time)
+			fmt.Printf("session闲置时间为:%s\n", Session_time)
+		}else {
+			Session_time = 30 * time.Minute
+			fmt.Printf("session闲置时间为默认时间:%s\n", Session_time)
 		}
 	}
 }
