@@ -7,10 +7,9 @@ import (
 	"github.com/aidonggua/growing/gutils"
 )
 
-//数据库连接对象
-var gdb *sql.DB = nil
-
-const (
+var (
+	//数据库连接对象
+	gdb *sql.DB = nil
 	//没有记录变化
 	ZRC error = errors.New("zero record changed")
 )
