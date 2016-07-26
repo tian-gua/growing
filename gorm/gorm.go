@@ -10,6 +10,10 @@ import (
 //数据库连接对象
 var gdb *sql.DB = nil
 
+const (
+	//没有记录变化
+	ZRC error = errors.New("zero record changed")
+)
 
 //插入或者更新一条记录
 //插入和更新取决于 id 字段是否为0
@@ -41,7 +45,7 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 		return err
 	}
 	if rownum == 0 {
-		return errors.New("no record insert")
+		return ZRC
 	}
 	return nil
 
@@ -66,7 +70,7 @@ func Delete(obj interface{}, gtx ...*Transaction) error {
 		return err
 	}
 	if rownum == 0 {
-		return errors.New("no record delete")
+		return ZRC
 	}
 	return nil
 }
