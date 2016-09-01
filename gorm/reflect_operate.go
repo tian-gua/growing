@@ -9,7 +9,7 @@ import (
 )
 
 //将v2的值赋给v1
-func setValue(v1 reflect.Value, v2 sql.RawBytes) {
+func setRawData(v1 reflect.Value, v2 sql.RawBytes) {
 	switch t := v1.Interface().(type){
 	case string:
 		v1.Set(reflect.ValueOf(string(v2)))

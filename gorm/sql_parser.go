@@ -3,8 +3,6 @@ package gorm
 import (
 	"strings"
 	"github.com/aidonggua/growing/gutils"
-	"fmt"
-	"time"
 )
 
 
@@ -29,7 +27,6 @@ func parseQuerySql(obj interface{}) string {
 	sqlStr = strings.TrimSpace(sqlStr)
 	//trim掉where
 	sqlStr = strings.Trim(sqlStr, "where")
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 	return sqlStr
 }
 
@@ -48,7 +45,6 @@ func parseQueryAllSql(obj interface{}) string {
 	}
 	//trim掉逗号和and
 	sqlStr = strings.TrimRight(sqlStr, ",") + " from " + tName
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 	return sqlStr
 }
 
@@ -100,7 +96,6 @@ func parseSaveSql(obj interface{}) string {
 		}
 		sqlStr = strings.TrimRight(sqlStr, ",") + " where id = " + id
 	}
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 	return sqlStr
 }
 
@@ -118,6 +113,5 @@ func parseDeleteSql(obj interface{}) string {
 	}
 	//拼sql
 	sqlStr = "delete from " + tName + " where id = " + id
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 	return sqlStr
 }

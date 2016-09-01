@@ -5,6 +5,8 @@ import (
 	"errors"
 	"reflect"
 	"github.com/aidonggua/growing/gutils"
+	"fmt"
+	"time"
 )
 
 var (
@@ -21,6 +23,9 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 	var err error
 	//生成sql
 	sqlStr := parseSaveSql(obj)
+
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
 	//判断是否在事务中执行
 	if len(gtx) > 0 {
 		stmt, err = gtx[0].tx.Prepare(sqlStr)
@@ -55,6 +60,9 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 func Delete(obj interface{}, gtx ...*Transaction) error {
 	//生成sql
 	sqlStr := parseSaveSql(obj)
+
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
 	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
@@ -76,11 +84,16 @@ func Delete(obj interface{}, gtx ...*Transaction) error {
 
 
 //查询记录
-func Query(obj, target interface{}, gtx ...*Transaction) error {
-	tv := reflect.Indirect(reflect.ValueOf(obj))
-	t := tv.Type()
-	targetVlaue := reflect.Indirect(reflect.ValueOf(target))
-	sqlStr := parseQuerySql(obj)
+func Query(param, resultSet interface{}, gtx ...*Transaction) error {
+	pramValue := reflect.Indirect(reflect.ValueOf(param))
+	rsValue := reflect.Indirect(reflect.ValueOf(resultSet))
+	//make一个slice,因为可能resultSlice可能已经存在值
+	//这里其实用不用都行,这里make一个或者用户自己new一个都OK
+	//newSlice := reflect.MakeSlice(rsValue.Type(), 0, 0)
+	sqlStr := parseQuerySql(param)
+
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
 	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
@@ -105,7 +118,6 @@ func Query(obj, target interface{}, gtx ...*Transaction) error {
 	for i := range values {
 		scans[i] = &values[i]
 	}
-	var index int = 0
 	//遍历所有记录
 	for rows.Next() {
 		err := rows.Scan(scans...)
@@ -113,29 +125,32 @@ func Query(obj, target interface{}, gtx ...*Transaction) error {
 			return err
 		}
 		//根据反射来新建一个和记录对应的对象
-		var newV = reflect.New(t).Elem()
+		var newV = reflect.New(pramValue.Type()).Elem()
 		for i := 0; i < colNum; i++ {
 			colName := columns[i]
-			setValue(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
+			setRawData(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
 		}
-		targetVlaue = reflect.Append(targetVlaue, newV)
-		index++
+		rsValue = reflect.Append(rsValue, newV)
 	}
+
 	//更新target的值
-	reflect.ValueOf(target).Elem().Set(targetVlaue.Slice(0, index))
+	reflect.Indirect(reflect.ValueOf(resultSet)).Set(rsValue)
 	return nil
 
 }
 
 //查询所有记录
-func QueryAll(target interface{}, gtx ...*Transaction) error {
+func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 	//获得target的反射信息
-	targetV := reflect.Indirect(reflect.ValueOf(target))
+	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
 	//获得 切片元素 的反射信息
-	element := getEmptySliceValue(targetV)
+	element := getEmptySliceValue(resultsetRawData)
 	elementType := element.Type()
 	//生成sql
 	sqlStr := parseQueryAllSql(element.Interface())
+
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
 	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
@@ -160,7 +175,6 @@ func QueryAll(target interface{}, gtx ...*Transaction) error {
 	for i := range values {
 		scans[i] = &values[i]
 	}
-	var index int = 0
 	//遍历所有记录
 	for rows.Next() {
 		err := rows.Scan(scans...)
@@ -171,22 +185,24 @@ func QueryAll(target interface{}, gtx ...*Transaction) error {
 		var newV = reflect.New(elementType).Elem()
 		for i := 0; i < colNum; i++ {
 			colName := columns[i]
-			setValue(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
+			setRawData(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
 		}
-		targetV = reflect.Append(targetV, newV)
-		index++
+		resultsetRawData = reflect.Append(resultsetRawData, newV)
 	}
 	//更新target的值
-	reflect.ValueOf(target).Elem().Set(targetV.Slice(0, index))
+	reflect.ValueOf(resultSet).Elem().Set(resultsetRawData)
 	return nil
 
 }
 
 
 //执行之定义sql查询语句
-func CustomQuery(sqlStr string, target interface{}, gtx ...*Transaction) error {
+func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) error {
+
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
 	//获得target的反射信息
-	targetV := reflect.Indirect(reflect.ValueOf(target))
+	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
 	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
 		return err
@@ -212,8 +228,9 @@ func CustomQuery(sqlStr string, target interface{}, gtx ...*Transaction) error {
 		scans[i] = &values[i]
 	}
 	//如果传过来的是一个切片
-	if reflect.Slice == targetV.Type().Kind() {
-		elementType := getEmptySliceValue(targetV).Type()
+	if reflect.Slice == resultsetRawData.Type().Kind() {
+
+		elementType := getEmptySliceValue(resultsetRawData).Type()
 		var index int = 0
 		//遍历所有记录
 		for rows.Next() {
@@ -227,17 +244,17 @@ func CustomQuery(sqlStr string, target interface{}, gtx ...*Transaction) error {
 			if reflect.Struct == elementType.Kind() {
 				for i := 0; i < colNum; i++ {
 					colName := columns[i]
-					setValue(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
+					setRawData(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
 				}
 			} else {
 				//如果是 基础类型 则直接赋值
-				setValue(newV, values[0])
+				setRawData(newV, values[0])
 			}
-			targetV = reflect.Append(targetV, newV)
+			resultsetRawData = reflect.Append(resultsetRawData, newV)
 			index++
 		}
 		//更新target的值
-		reflect.ValueOf(target).Elem().Set(targetV.Slice(0, index))
+		reflect.ValueOf(resultSet).Elem().Set(resultsetRawData)
 
 	} else {
 		//target为单条记录
@@ -247,13 +264,13 @@ func CustomQuery(sqlStr string, target interface{}, gtx ...*Transaction) error {
 			return err
 		}
 		//如果target的为单个结构体
-		if reflect.Struct == targetV.Type().Kind() {
+		if reflect.Struct == resultsetRawData.Type().Kind() {
 			for i := 0; i < colNum; i++ {
 				colName := columns[i]
-				setValue(targetV.FieldByName(gutils.ToCamelCase(colName)), values[i])
+				setRawData(resultsetRawData.FieldByName(gutils.ToCamelCase(colName)), values[i])
 			}
 		} else {
-			setValue(targetV, values[0])
+			setRawData(resultsetRawData, values[0])
 		}
 	}
 	return nil
