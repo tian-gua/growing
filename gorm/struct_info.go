@@ -10,10 +10,9 @@ var StructInfoMap = make(map[reflect.Type]*StructInfo)
 
 //结构体信息
 type StructInfo struct {
-	FieldsMap     map[string]StructField //字段字典集合
-	Name          string                 //类型名
-	TableName     string                 //表名
-	SubStructInfo []StructInfo           //子结构体
+	FieldsMap map[string]StructField //字段字典集合
+	Name      string                 //类型名
+	TableName string                 //表名
 }
 
 //结构体字段信息
@@ -47,7 +46,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 	var info *StructInfo
 	var tableName string
 	var tName string
-	subStructInfo := new([]StructInfo)
+
 	fieldsMap := make(map[string]StructField)
 	//从map里取结构体信息,如果map没有则新建一个然后存map
 	if value, ok := StructInfoMap[t]; ok {
@@ -56,23 +55,23 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 	}
 	//遍历所有属性
 	for index := 0; index < t.NumField(); index++ {
-		sf := t.Field(index)
+		structField := t.Field(index)
 		sfv := v.Field(index)
-		t := sf.Type
+		t := structField.Type
 		//判断属性是否为结构体
-		if sf.Type.Kind() == reflect.Struct {
-			//递归获得子结构体信息
-			*subStructInfo = append(*subStructInfo, *GetReflectInfo(sf.Type, sfv))
-		} else {
-			//如果有缓存则只更新StructField的value
-			sf := StructField{
-				name:sf.Name,
-				tableFieldName:gutils.UnCamelCase(sf.Name),
-				tableFieldType:gutils.GetDBType(t.Kind().String()),
-				value:sfv,
-				stringValue:gutils.ParseValueToString(sfv)}
-			fieldsMap[sf.name] = sf
-		}
+		//if sf.Type.Kind() == reflect.Struct {
+		//	//递归获得子结构体信息
+		//	*subStructInfo = append(*subStructInfo, *GetReflectInfo(sf.Type, sfv))
+		//} else {
+		//如果有缓存则只更新StructField的value
+		sf := StructField{
+			name:structField.Name,
+			tableFieldName:gutils.UnCamelCase(structField.Name),
+			tableFieldType:gutils.GetDBType(t.Kind().String()),
+			value:sfv,
+			stringValue:gutils.ParseValueToString(sfv)}
+		fieldsMap[sf.name] = sf
+		//}
 	}
 	if haveCache {
 		tableName = cache.TableName
@@ -81,7 +80,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 		tableName = gutils.UnCamelCase(t.Name())
 		tName = t.Name()
 	}
-	info = &StructInfo{Name:tName, TableName:tableName, FieldsMap:fieldsMap, SubStructInfo:*subStructInfo }
+	info = &StructInfo{Name:tName, TableName:tableName, FieldsMap:fieldsMap }
 	StructInfoMap[t] = info
 	return info
 }
