@@ -40,20 +40,17 @@ func GetStructInfo(target interface{}) *StructInfo {
 //获得结构体的反射的信息
 func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 
-	var (
-		tableName string
-		tName string
-		structInfo *StructInfo
-	)
+	var structInfo *StructInfo
 
 	fieldsMap := make(map[string]*StructField)
 	//从map里取结构体信息,如果map没有则新建一个然后存map
 	if value, ok := StructInfoMap[t]; ok {
 		structInfo = value
-
-		//更新缓存的结构体字段的值
+		//更新缓存的结构体字段的值,这一部分肯定不能使用缓存,因为sql的条件都不同
 		for key, _ := range structInfo.FieldsMap {
+			//更新字段的value属性
 			structInfo.FieldsMap[key].value.Set(v.FieldByName(key))
+			//更新字段的stringValue属性
 			structInfo.FieldsMap[key].stringValue = gutils.ParseValueToString(v.FieldByName(key))
 		}
 
@@ -63,6 +60,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			structField := t.Field(index)
 			structFieldValue := v.Field(index)
 
+			//构造一个新的StructField
 			sf := &StructField{
 				name:structField.Name,
 				tableFieldName:gutils.UnCamelCase(structField.Name),
@@ -70,17 +68,16 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 				value:structFieldValue,
 				stringValue:gutils.ParseValueToString(structFieldValue),
 			}
-
+			//将新的StructField放入Map
 			fieldsMap[sf.name] = sf
 
-			tableName = gutils.UnCamelCase(t.Name())
-			tName = t.Name()
-
+			//构造一个新的StructInfo
 			structInfo = &StructInfo{
-				Name:tName,
-				TableName:tableName,
+				Name:t.Name(),
+				TableName:gutils.UnCamelCase(t.Name()),
 				FieldsMap:fieldsMap,
 			}
+			//将新的StructInfo放入Map当缓存用
 			StructInfoMap[t] = structInfo
 		}
 	}
