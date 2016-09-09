@@ -74,46 +74,67 @@ func checkHandler(h handler) bool {
 }
 
 func do(rw http.ResponseWriter, req *http.Request, h handler) {
-	funcT := reflect.TypeOf(h)
-	funcV := reflect.ValueOf(h)
-	numin := funcT.NumIn()
-	vs := new([]reflect.Value)
+	//获取函数的反射type和value
+	funcType := reflect.TypeOf(h)
+	funcValue := reflect.ValueOf(h)
+	//获取函数的参数个数
+	numin := funcType.NumIn()
+	paramSlice := make([]reflect.Value, 0)
+	//遍历参数
 	for i := 0; i < numin; i++ {
-		if funcT.In(i).Kind() == reflect.Ptr {
-			if "Request" == funcT.In(i).Elem().Name() {
-				*vs = append(*vs, reflect.ValueOf(req))
+		//获取参数的反射Type
+		paramType := funcType.In(i)
+		//处理参数
+		//如果参数是指针并且是指向http.Request结构体则不处理(注入参数)，把参数放入参数切片里
+		//如果参数是http.ResponseWriter也不处理，加入参数切片
+		//如果是其他结构体，则遍历属性，把表单的值注入进去。
+		if paramType.Kind() == reflect.Ptr {
+			if "Request" == paramType.Elem().Name() {
+				paramSlice = append(paramSlice, reflect.ValueOf(req))
 			}
 		} else {
-			if "ResponseWriter" == funcT.In(i).Name() {
-				*vs = append(*vs, reflect.ValueOf(rw))
-			} else if reflect.Struct == funcT.In(i).Kind() {
-				v := reflect.New(funcT.In(i)).Elem()
-				t := reflect.TypeOf(v.Interface())
-				//遍历属性,并赋值
+			if "ResponseWriter" == paramType.Name() {
+				paramSlice = append(paramSlice, reflect.ValueOf(rw))
+			} else if reflect.Struct == paramType.Kind() {
+				//通过参数反射类型新建一个参数Value
+				newStructParam := reflect.New(paramType).Elem()
+				//遍历结构体属性,并赋值
 				//值从表单里取,根据属性名字对应
-				for j := 0; j < t.NumField(); j++ {
-					sf := t.Field(j)
-					sfv := v.Field(j)
+				for j := 0; j < paramType.NumField(); j++ {
+					//获取结构体字段类型反射
+					structField := paramType.Field(j)
+					//获取结构体字段值反射
+					structFieldValue := newStructParam.Field(j)
+
+					//获取表单的key
+					//之前是用的结构体字段的name，但是大小写很麻烦
+					//现在是使用字段的tag，这里就定tag为"key"
+					key := structField.Tag.Get("key")
+
 					//注入不同类型的值
-					switch sf.Type.Kind() {
+					switch structField.Type.Kind() {
 					case reflect.String:
-						sfv.SetString(req.FormValue(sf.Name))
+						//修改字段的字符串值
+						structFieldValue.SetString(req.FormValue(key))
 					case reflect.Int:
-						if formv := req.FormValue(sf.Name); len(formv) != 0 {
+						//获取表单的值，并转换成int类型，并赋值给结构体参数的字段
+						if formv := req.FormValue(key); len(formv) != 0 {
 							conv, err := strconv.Atoi(formv)
 							if err != nil {
 								fmt.Println(err)
 							} else {
-								sfv.SetInt(int64(conv))
+								structFieldValue.SetInt(int64(conv))
 							}
 						}
 					default:
 						fmt.Println("注入参数失败!")
 					}
 				}
-				*vs = append(*vs, v)
+				//将结构体参数放入参数切片
+				paramSlice = append(paramSlice, newStructParam)
 			}
 		}
 	}
-	funcV.Call(*vs)
+	//调用handler，并将上面构造的结构体参数传入
+	funcValue.Call(paramSlice)
 }
