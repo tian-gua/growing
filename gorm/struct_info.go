@@ -51,7 +51,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			//更新字段的value属性
 			structInfo.FieldsMap[key].value.Set(v.FieldByName(key))
 			//更新字段的stringValue属性
-			structInfo.FieldsMap[key].stringValue = gutils.ParseValueToString(v.FieldByName(key))
+			structInfo.FieldsMap[key].stringValue = gutils.ParseValueToDBString(v.FieldByName(key))
 		}
 
 	} else {
@@ -66,7 +66,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 				tableFieldName:gutils.UnCamelCase(structField.Name),
 				tableFieldType:gutils.GetDBType(t.Kind().String()),
 				value:structFieldValue,
-				stringValue:gutils.ParseValueToString(structFieldValue),
+				stringValue:gutils.ParseValueToDBString(structFieldValue),
 			}
 			//将新的StructField放入Map
 			fieldsMap[sf.name] = sf
