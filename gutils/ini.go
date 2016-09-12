@@ -23,7 +23,7 @@ func GetIniProperties(path string) (map[string]map[string]string, error) {
 	file, err := os.Open(filepath.Join(filepath.Dir(filename), path))
 	defer file.Close()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	reader := bufio.NewReader(file)
 	var title string = "default"
@@ -40,12 +40,12 @@ func GetIniProperties(path string) (map[string]map[string]string, error) {
 			}
 		} else {
 			if err != io.EOF {
-				return err
+				return nil, err
 			}
 			break
 		}
 	}
-	return properties
+	return properties, nil
 }
 
 
