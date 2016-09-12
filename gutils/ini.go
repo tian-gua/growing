@@ -7,18 +7,23 @@ import (
 	"regexp"
 	"strings"
 	"io"
+	"path/filepath"
+	"runtime"
 )
 
 
 //获取ini文件的配置
 //[default]
 //key=value
-func GetIniProperties(path string) map[string]map[string]string {
+func GetIniProperties(path string) (map[string]map[string]string, error) {
 	properties := make(map[string]map[string]string)
-	file, err := os.Open(path)
+	//获取调用此函数的文件的绝对路径
+	_, filename, _, _ := runtime.Caller(1)
+	//拼接ini文件的路径
+	file, err := os.Open(filepath.Join(filepath.Dir(filename), path))
 	defer file.Close()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	reader := bufio.NewReader(file)
 	var title string = "default"
@@ -35,7 +40,7 @@ func GetIniProperties(path string) map[string]map[string]string {
 			}
 		} else {
 			if err != io.EOF {
-				panic(err)
+				return err
 			}
 			break
 		}
