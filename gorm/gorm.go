@@ -19,7 +19,7 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 	var stmt *sql.Stmt
 	var err error
 	//生成sql
-	sqlStr := parseSaveSql(obj)
+	sqlStr := ParseSaveSql(obj)
 
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
