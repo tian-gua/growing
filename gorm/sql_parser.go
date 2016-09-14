@@ -2,7 +2,6 @@ package gorm
 
 import (
 	"strings"
-	"github.com/aidonggua/growing/gutils"
 )
 
 
@@ -17,7 +16,7 @@ func parseQuerySql(obj interface{}) string {
 	for _, v := range structInfo.FieldsMap {
 		sqlStr += v.tableFieldName + ","
 		//如果查询属性的值为零值得话 不写进where查询里
-		if !gutils.IsZero(v.value) {
+		if !isZero(v.value) {
 			whereStr += v.tableFieldName + "=" + v.stringValue + " and "
 		}
 	}
@@ -89,7 +88,7 @@ func parseSaveSql(obj interface{}) string {
 				continue
 			} else {
 				//如果属性为零值则不更新
-				if !gutils.IsZero(v.value) {
+				if !isZero(v.value) {
 					sqlStr += v.tableFieldName + "=" + v.stringValue + ","
 				}
 			}

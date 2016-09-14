@@ -2,7 +2,6 @@ package gorm
 
 import (
 	"reflect"
-	"github.com/aidonggua/growing/gutils"
 	"fmt"
 )
 
@@ -51,7 +50,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			//更新字段的value属性
 			structInfo.FieldsMap[key].value.Set(v.FieldByName(key))
 			//更新字段的stringValue属性
-			structInfo.FieldsMap[key].stringValue = gutils.ParseValueToDBString(v.FieldByName(key))
+			structInfo.FieldsMap[key].stringValue = parseValueToDBString(v.FieldByName(key))
 		}
 
 	} else {
@@ -63,10 +62,10 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			//构造一个新的StructField
 			sf := &StructField{
 				name:structField.Name,
-				tableFieldName:gutils.UnCamelCase(structField.Name),
-				tableFieldType:gutils.GetDBType(t.Kind().String()),
+				tableFieldName:structField.Tag.Get("field"),
+				tableFieldType:getDBType(t.Kind().String()),
 				value:structFieldValue,
-				stringValue:gutils.ParseValueToDBString(structFieldValue),
+				stringValue:parseValueToDBString(structFieldValue),
 			}
 			//将新的StructField放入Map
 			fieldsMap[sf.name] = sf
@@ -74,7 +73,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			//构造一个新的StructInfo
 			structInfo = &StructInfo{
 				Name:t.Name(),
-				TableName:gutils.UnCamelCase(t.Name()),
+				TableName:getTableName(t.Name()),
 				FieldsMap:fieldsMap,
 			}
 			//将新的StructInfo放入Map当缓存用

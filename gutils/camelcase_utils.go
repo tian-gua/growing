@@ -6,9 +6,6 @@ import (
 	"fmt"
 )
 
-
-
-
 //将字符串转为驼峰命名规则,并且首字母大写
 //如: a_cd -> ACd
 func ToCamelCase(str string) string {
@@ -37,7 +34,7 @@ func ToCamelCase(str string) string {
 }
 
 //和ToCamelCase方法襄樊
-//将ACd 转换成 A_cd
+//将ACd 转换成 a_cd
 func UnCamelCase(str string) string {
 	//判断参数是否为空
 	if len(str) == 0 {
@@ -62,6 +59,5 @@ func UnCamelCase(str string) string {
 	}
 	//如果转换完成自后 第一个 字符串 为 _ ,则删掉_
 	return strings.TrimLeft(str, "_")
-
 }
 
