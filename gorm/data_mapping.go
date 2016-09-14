@@ -3,6 +3,7 @@ package gorm
 import (
 	"reflect"
 	"fmt"
+	"strings"
 )
 
 var StructInfoMap = make(map[reflect.Type]*StructInfo)
@@ -52,34 +53,37 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			//更新字段的stringValue属性
 			structInfo.FieldsMap[key].stringValue = parseValueToDBString(v.FieldByName(key))
 		}
-
 	} else {
 		//遍历所有属性
 		for index := 0; index < t.NumField(); index++ {
 			structField := t.Field(index)
 			structFieldValue := v.Field(index)
 
-			//构造一个新的StructField
-			sf := &StructField{
-				name:structField.Name,
-				//获取field标签的值 作为数据库字段名
-				tableFieldName:structField.Tag.Get("field"),
-				tableFieldType:getDataType(t.Kind().String()),
-				value:structFieldValue,
-				stringValue:parseValueToDBString(structFieldValue),
-			}
-			//将新的StructField放入Map
-			fieldsMap[sf.name] = sf
+			//获取field标签的值 作为数据库字段名
+			tableField := strings.TrimSpace(structField.Tag.Get("field"))
 
-			//构造一个新的StructInfo
-			structInfo = &StructInfo{
-				Name:t.Name(),
-				TableName:getTableName(t.Name()),
-				FieldsMap:fieldsMap,
+			//如果字段
+			if len(tableField) != 0 {
+				//构造一个新的StructField
+				sf := &StructField{
+					name:structField.Name,
+					tableFieldName:tableField,
+					tableFieldType:getDataType(t.Kind().String()),
+					value:structFieldValue,
+					stringValue:parseValueToDBString(structFieldValue),
+				}
+				//将新的StructField放入Map
+				fieldsMap[tableField] = sf
 			}
-			//将新的StructInfo放入Map当缓存用
-			StructInfoMap[t] = structInfo
 		}
+		//构造一个新的StructInfo
+		structInfo = &StructInfo{
+			Name:t.Name(),
+			TableName:getTableName(t.Name()),
+			FieldsMap:fieldsMap,
+		}
+		//将新的StructInfo放入Map当缓存用
+		StructInfoMap[t] = structInfo
 	}
 	return structInfo
 }

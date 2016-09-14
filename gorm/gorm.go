@@ -56,7 +56,7 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 //删除一条记录
 func Delete(obj interface{}, gtx ...*Transaction) error {
 	//生成sql
-	sqlStr := parseSaveSql(obj)
+	sqlStr := ParseDeleteByPrimaryKeySql(obj)
 
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
@@ -87,7 +87,7 @@ func Query(param, resultSet interface{}, gtx ...*Transaction) error {
 	//make一个slice,因为可能resultSlice可能已经存在值
 	//这里其实用不用都行,这里make一个或者用户自己new一个都OK
 	//newSlice := reflect.MakeSlice(rsValue.Type(), 0, 0)
-	sqlStr := parseQuerySql(param)
+	sqlStr := ParseQuerySql(param)
 
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
@@ -144,7 +144,7 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 	element := getEmptySliceValue(resultsetRawData)
 	elementType := element.Type()
 	//生成sql
-	sqlStr := parseQueryAllSql(element.Interface())
+	sqlStr := ParseQueryAllSql(element.Interface())
 
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
@@ -195,9 +195,7 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 
 //执行之定义sql查询语句
 func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) error {
-
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
 	//获得target的反射信息
 	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
 	stmt, err := getStatement(sqlStr, gtx...)
