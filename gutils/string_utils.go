@@ -1,12 +1,5 @@
 package gutils
 
-import (
-	"strconv"
-	"strings"
-	"time"
-)
-
-
 //判断字符串指针的值是否为空
 func IsEmpty(str *string) bool {
 	if str == nil || len(*str) == 0 {
