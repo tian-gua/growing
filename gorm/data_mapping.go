@@ -30,7 +30,7 @@ func GetStructInfo(target interface{}) *StructInfo {
 	t := v.Type()
 	//判断target的类型
 	if t.Kind() != reflect.Struct {
-		fmt.Println(GET_STRUCTINFO_ERROR)
+		fmt.Println("not struct")
 		return nil
 	}
 	return GetReflectInfo(t, v)
@@ -62,8 +62,9 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			//构造一个新的StructField
 			sf := &StructField{
 				name:structField.Name,
+				//获取field标签的值 作为数据库字段名
 				tableFieldName:structField.Tag.Get("field"),
-				tableFieldType:getDBType(t.Kind().String()),
+				tableFieldType:getDataType(t.Kind().String()),
 				value:structFieldValue,
 				stringValue:parseValueToDBString(structFieldValue),
 			}

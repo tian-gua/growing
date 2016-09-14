@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"strings"
+	"fmt"
 )
 
 
@@ -108,7 +109,7 @@ func parseDeleteSql(obj interface{}) string {
 	//获得要删除的id
 	id := structInfo.FieldsMap["Id"].stringValue
 	if "0" == id {
-		panic(NOT_FOUND_ID)
+		panic(fmt.Errorf("id not fount"))
 	}
 	//拼sql
 	sqlStr = "delete from " + tName + " where id = " + id

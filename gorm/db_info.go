@@ -8,7 +8,7 @@ import (
 
 
 //结构体类型和数据库类型转换
-func getDBType(structType string) string {
+func getDataType(structType string) string {
 	dbtype := "string"
 	switch true {
 	case strings.HasPrefix(structType, "varchar"):

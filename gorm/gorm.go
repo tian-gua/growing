@@ -2,7 +2,6 @@ package gorm
 
 import (
 	"database/sql"
-	"errors"
 	"reflect"
 	"github.com/aidonggua/growing/gutils"
 	"fmt"
@@ -12,8 +11,6 @@ import (
 var (
 	//数据库连接对象
 	gdb *sql.DB = nil
-	//没有记录变化
-	ZRC error = errors.New("zero record changed")
 )
 
 //插入或者更新一条记录
@@ -49,7 +46,7 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 		return err
 	}
 	if rownum == 0 {
-		return ZRC
+		return fmt.Errorf("no record changed");
 	}
 	return nil
 
@@ -77,7 +74,7 @@ func Delete(obj interface{}, gtx ...*Transaction) error {
 		return err
 	}
 	if rownum == 0 {
-		return ZRC
+		return fmt.Errorf("no record changed");
 	}
 	return nil
 }
