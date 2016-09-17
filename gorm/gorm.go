@@ -121,19 +121,18 @@ func Query(param, resultSet interface{}, gtx ...*Transaction) error {
 		if err != nil {
 			return err
 		}
-		//根据反射来新建一个和记录对应的对象
-		var newV = reflect.New(pramValue.Type()).Elem()
+		//根据反射来新建一个临时value和记录对应的对象
+		var temporaryValue = reflect.New(pramValue.Type()).Elem()
 		for i := 0; i < colNum; i++ {
 			colName := columns[i]
-			setRawData(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
+			setRawData(temporaryValue.FieldByName(gutils.ToCamelCase(colName)), values[i])
 		}
-		rsValue = reflect.Append(rsValue, newV)
+		rsValue = reflect.Append(rsValue, temporaryValue)
 	}
 
 	//更新target的值
 	reflect.Indirect(reflect.ValueOf(resultSet)).Set(rsValue)
 	return nil
-
 }
 
 //查询所有记录
@@ -178,18 +177,17 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 		if err != nil {
 			return err
 		}
-		//根据反射来新建一个和记录对应的对象
-		var newV = reflect.New(elementType).Elem()
+		//根据反射来新建一个临时value和记录对应的对象
+		var temporaryValue = reflect.New(elementType).Elem()
 		for i := 0; i < colNum; i++ {
 			colName := columns[i]
-			setRawData(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
+			setRawData(temporaryValue.FieldByName(gutils.ToCamelCase(colName)), values[i])
 		}
-		resultsetRawData = reflect.Append(resultsetRawData, newV)
+		resultsetRawData = reflect.Append(resultsetRawData, temporaryValue)
 	}
 	//更新target的值
 	reflect.ValueOf(resultSet).Elem().Set(resultsetRawData)
 	return nil
-
 }
 
 
@@ -233,19 +231,19 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 			if err != nil {
 				return err
 			}
-			//根据反射来新建一个和记录对应的对象
-			var newV = reflect.New(elementType).Elem()
+			//根据反射来新建一个临时value和记录对应的对象
+			var temporaryValue = reflect.New(elementType).Elem()
 			//如果切片类型为结构体
 			if reflect.Struct == elementType.Kind() {
 				for i := 0; i < colNum; i++ {
 					colName := columns[i]
-					setRawData(newV.FieldByName(gutils.ToCamelCase(colName)), values[i])
+					setRawData(temporaryValue.FieldByName(gutils.ToCamelCase(colName)), values[i])
 				}
 			} else {
 				//如果是 基础类型 则直接赋值
-				setRawData(newV, values[0])
+				setRawData(temporaryValue, values[0])
 			}
-			resultsetRawData = reflect.Append(resultsetRawData, newV)
+			resultsetRawData = reflect.Append(resultsetRawData, temporaryValue)
 			index++
 		}
 		//更新target的值
@@ -269,7 +267,6 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 		}
 	}
 	return nil
-
 }
 
 //获得空切片元素的类型

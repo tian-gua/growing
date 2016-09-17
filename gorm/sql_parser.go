@@ -55,7 +55,7 @@ func ParseDeleteByPrimaryKeySql(obj interface{}) string {
 	structInfo := GetStructInfo(obj)
 	tName := structInfo.TableName
 	//获得要删除的id
-	if structField, ok := structInfo.FieldsMap["id"]; ok && !isZero(structField.value){
+	if structField, ok := structInfo.FieldsMap["id"]; ok && !isZero(structField.value) {
 		//拼sql
 		sqlStr = fmt.Sprintf("delete from %s where id = %s", tName, structField.stringValue)
 	} else {
@@ -84,15 +84,13 @@ func ParseSaveSql(obj interface{}) string {
 		var fieldList string = ""
 		//拼sql
 		for _, structField := range structInfo.FieldsMap {
-			fieldList += structField.tableFieldName + ","
-			if "id" == structField.tableFieldName {
-				valueList += "default,"
-			} else {
+			if !isZero(structField.value) {
+				fieldList += structField.tableFieldName + ","
 				valueList += structField.stringValue + ","
 			}
 		}
 		//去掉右边的逗号
-		sqlStr = fmt.Sprintf("insert into %s(%s)values(%s)", tName, strings.TrimRight(fieldList, ","), strings.TrimRight(valueList, ","))
+		sqlStr = fmt.Sprintf("insert into %s(id,%s)values(default,%s)", tName, strings.TrimRight(fieldList, ","), strings.TrimRight(valueList, ","))
 	} else {
 		var kvList string = ""
 		//拼sql
@@ -106,7 +104,7 @@ func ParseSaveSql(obj interface{}) string {
 				}
 			}
 		}
-		sqlStr = fmt.Sprintf("update %s set %s where id = %s", tName, strings.TrimRight(kvList, ","), id)
+		sqlStr = fmt.Sprintf("update %s set %s where id=%s", tName, strings.TrimRight(kvList, ","), id)
 	}
 	return sqlStr
 }
