@@ -1,16 +1,11 @@
-package generate
+package gorm
 
 import (
 	"database/sql"
 	"fmt"
-	"strings"
-	"github.com/aidonggua/growing/gutils"
 )
 
 
-//默认数据库连接信息
-var db string = "mysql"
-var connStr string = ""
 
 
 //根据数据库的table生成struct
@@ -18,16 +13,10 @@ var connStr string = ""
 //id->Id
 //user_name->UserName
 func Generate(tableName string) {
-	//链接数据库
-	db, err := sql.Open(db, connStr)
-	if err != nil {
-		panic(err)
-	}
-	//关闭链接
-	defer db.Close()
+
 	//查询表结构信息
 	sqlString := "desc " + tableName
-	rows, err := db.Query(sqlString)
+	rows, err := gdb.Query(sqlString)
 	if err != nil {
 		panic(err)
 	}
@@ -56,24 +45,16 @@ func Generate(tableName string) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		newField := gutils.ToCamelCase(string(values[0]))
 		//存放每一条记录的第一个字段(表的字段名) 到fields切片里
-		fields = append(fields, newField)
+		fields = append(fields, toCamelCase(string(values[0])))
 		ftype := string(values[1])
-		ftype = gutils.GetDBType(ftype)
+		ftype = getDataType(ftype)
 		fieldTypes = append(fieldTypes, ftype)
 	}
-	structString := "type " + strings.Title(tableName) + " struct{\n"
+	structString := "type " + tableName + " struct{\n"
 	for i, v := range fields {
-		structString += "\t" + v + "\t" + fieldTypes[i] + "\n"
+		structString += "\t" + v + "\t" + fieldTypes[i] + "\t\t`field:\"" + unCamelCase(v) + "\"`" + "\n"
 	}
 	structString += "}"
 	fmt.Println(structString)
-
-}
-
-//设置数据库连接信息
-func SetDBInfo(_db, _connStr string) {
-	db = _db
-	connStr = _connStr
 }

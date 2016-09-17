@@ -83,7 +83,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 		//构造一个新的StructInfo
 		structInfo = &StructInfo{
 			Name:t.Name(),
-			TableName:getTableName(t.Name()),
+			TableName:toCamelCase(t.Name()),
 			FieldsMap:fieldsMap,
 		}
 		//将新的StructInfo放入Map当缓存用

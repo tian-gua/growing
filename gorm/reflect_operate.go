@@ -9,19 +9,19 @@ import (
 )
 
 //将v2的值赋给v1
-func setRawData(v1 reflect.Value, v2 sql.RawBytes) {
-	switch t := v1.Interface().(type){
+func setRawData(v reflect.Value, rawData sql.RawBytes) {
+	switch t := v.Interface().(type){
 	case string:
-		v1.Set(reflect.ValueOf(string(v2)))
+		v.Set(reflect.ValueOf(string(rawData)))
 	case int:
-		num, _ := strconv.Atoi(string(v2))
-		v1.Set(reflect.ValueOf(num))
+		num, _ := strconv.Atoi(string(rawData))
+		v.Set(reflect.ValueOf(num))
 	case time.Time:
-		newTime, err := time.ParseInLocation("2006-01-02 15:04:05", string(v2), time.Local)
+		newTime, err := time.ParseInLocation("2006-01-02 15:04:05", string(rawData), time.Local)
 		if err != nil {
 			panic(err)
 		}
-		v1.Set(reflect.ValueOf(newTime))
+		v.Set(reflect.ValueOf(newTime))
 	default:
 		fmt.Println("未处理的类型:%v", t)
 	}

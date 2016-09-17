@@ -16,27 +16,18 @@ var (
 //插入或者更新一条记录
 //插入和更新取决于 id 字段是否为0
 func Save(obj interface{}, gtx ...*Transaction) error {
-	var stmt *sql.Stmt
 	var err error
 	//生成sql
 	sqlStr := ParseSaveSql(obj)
 
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
-	//判断是否在事务中执行
-	if len(gtx) > 0 {
-		stmt, err = gtx[0].tx.Prepare(sqlStr)
-		if err != nil {
-			return err
-		}
-	} else {
-		//从sql.DB里获得stmt
-		stmt, err = gdb.Prepare(sqlStr)
-		if err != nil {
-			return err
-		}
+	stmt, err := getStatement(sqlStr, gtx...)
+	if err != nil {
+		return err
 	}
 	defer stmt.Close()
+
 	result, err := stmt.Exec()
 	if err != nil {
 		return err
@@ -125,7 +116,7 @@ func Query(param, resultSet interface{}, gtx ...*Transaction) error {
 		var temporaryValue = reflect.New(pramValue.Type()).Elem()
 		for i := 0; i < colNum; i++ {
 			colName := columns[i]
-			setRawData(temporaryValue.FieldByName(gutils.ToCamelCase(colName)), values[i])
+			setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
 		}
 		rsValue = reflect.Append(rsValue, temporaryValue)
 	}
@@ -181,7 +172,7 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 		var temporaryValue = reflect.New(elementType).Elem()
 		for i := 0; i < colNum; i++ {
 			colName := columns[i]
-			setRawData(temporaryValue.FieldByName(gutils.ToCamelCase(colName)), values[i])
+			setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
 		}
 		resultsetRawData = reflect.Append(resultsetRawData, temporaryValue)
 	}
@@ -237,7 +228,7 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 			if reflect.Struct == elementType.Kind() {
 				for i := 0; i < colNum; i++ {
 					colName := columns[i]
-					setRawData(temporaryValue.FieldByName(gutils.ToCamelCase(colName)), values[i])
+					setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
 				}
 			} else {
 				//如果是 基础类型 则直接赋值
@@ -267,16 +258,6 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 		}
 	}
 	return nil
-}
-
-//获得空切片元素的类型
-func getEmptySliceValue(slice reflect.Value) reflect.Value {
-	t := slice.Type()
-	//给切片元素开辟一个空间
-	vSlice := reflect.MakeSlice(t, 1, 1)
-	//获得 切片元素 的反射信息
-	element := vSlice.Slice(0, 1).Index(0)
-	return element
 }
 
 //获得statement,有事务和非事务2种情况
