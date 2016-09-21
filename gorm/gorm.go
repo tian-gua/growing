@@ -34,7 +34,6 @@ func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
 		return 0, err
 	}
 	if strings.HasPrefix(sqlStr, "insert") {
-		fmt.Println("insert")
 		return result.LastInsertId()
 	}
 	return result.RowsAffected()

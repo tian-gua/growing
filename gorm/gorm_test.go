@@ -47,7 +47,7 @@ func Test_gorm_delete(t *testing.T) {
 
 func Test_gorm_update(t *testing.T) {
 	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
-	id, err := Save(&practice{Id:7, Name:"saf"})
+	id, err := Save(&practice{Id:2, Name:"saf", CreateTime:time.Now()})
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +56,7 @@ func Test_gorm_update(t *testing.T) {
 
 func Test_gorm_save(t *testing.T) {
 	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
-	id, err := Save(&practice{Name:"aa"})
+	id, err := Save(&practice{Name:"aa", CreateTime:time.Now()})
 	if err != nil {
 		panic(err)
 	}

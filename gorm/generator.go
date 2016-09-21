@@ -5,9 +5,6 @@ import (
 	"fmt"
 )
 
-
-
-
 //根据数据库的table生成struct
 //字段生成规则:
 //id->Id
