@@ -2,26 +2,25 @@ package gorm
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 //根据数据库的table生成struct
 //字段生成规则:
 //id->Id
 //user_name->UserName
-func Generate(tableName string) {
+func Generate(tableName string) (string, error) {
 
 	//查询表结构信息
 	sqlString := "desc " + tableName
 	rows, err := gdb.Query(sqlString)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer rows.Close()
 	//获得表所有字段
 	columns, err := rows.Columns()
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	colNum := len(columns)
 	//定义一个RawBytes切片接收所有字段的值
@@ -40,7 +39,7 @@ func Generate(tableName string) {
 		//读取所有的字段到 空结构体切片里
 		err := rows.Scan(scans...)
 		if err != nil {
-			fmt.Println(err)
+			return "", err
 		}
 		//存放每一条记录的第一个字段(表的字段名) 到fields切片里
 		fields = append(fields, toCamelCase(string(values[0])))
@@ -53,5 +52,6 @@ func Generate(tableName string) {
 		structString += "\t" + v + "\t" + fieldTypes[i] + "\t\t`field:\"" + unCamelCase(v) + "\"`" + "\n"
 	}
 	structString += "}"
-	fmt.Println(structString)
+
+	return structString, err
 }
