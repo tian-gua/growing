@@ -6,6 +6,7 @@ import (
 	"github.com/aidonggua/growing/gutils"
 	"fmt"
 	"time"
+	"strings"
 )
 
 var (
@@ -15,7 +16,7 @@ var (
 
 //插入或者更新一条记录
 //插入和更新取决于 id 字段是否为0
-func Save(obj interface{}, gtx ...*Transaction) error {
+func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
 	var err error
 	//生成sql
 	sqlStr := ParseSaveSql(obj)
@@ -24,28 +25,24 @@ func Save(obj interface{}, gtx ...*Transaction) error {
 
 	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer stmt.Close()
 
 	result, err := stmt.Exec()
 	if err != nil {
-		return err
+		return 0, err
 	}
-	rownum, err := result.RowsAffected()
-	if err != nil {
-		return err
+	if strings.HasPrefix(sqlStr, "insert") {
+		fmt.Println("insert")
+		return result.LastInsertId()
 	}
-	if rownum == 0 {
-		return fmt.Errorf("no record changed");
-	}
-	return nil
-
+	return result.RowsAffected()
 }
 
 
 //删除一条记录
-func Delete(obj interface{}, gtx ...*Transaction) error {
+func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 	//生成sql
 	sqlStr := ParseDeleteByPrimaryKeySql(obj)
 
@@ -53,21 +50,14 @@ func Delete(obj interface{}, gtx ...*Transaction) error {
 
 	stmt, err := getStatement(sqlStr, gtx...)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer stmt.Close()
 	result, err := stmt.Exec()
 	if err != nil {
-		return err
+		return 0, err
 	}
-	rownum, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rownum == 0 {
-		return fmt.Errorf("no record changed");
-	}
-	return nil
+	return result.RowsAffected()
 }
 
 
