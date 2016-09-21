@@ -6,9 +6,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-
-//*************************************test **********************************
-//*********************************************************************************
 type practice struct {
 	Id         int                `field:"id"`
 	CreateTime time.Time                `field:"create_time"`
