@@ -12,6 +12,10 @@ type userAgent struct {
 	Sex  int `field:"sex"`
 }
 
+func (u *userAgent) GetTableName() string {
+	return "tb_user_agent"
+}
+
 func Test_ParseSql(t *testing.T) {
 	t.Log(ParseDeleteByPrimaryKeySql(&userAgent{Id:1, Age:2}))
 	t.Log(ParseQueryAllSql(&userAgent{}))

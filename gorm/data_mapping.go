@@ -80,10 +80,21 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 				fieldsMap[tableField] = sf
 			}
 		}
+
+		//表名
+		var tableName string
+		//如果实现了Table接口，则使用接口指定的表名
+		//否则使用函数unCamelCase生成
+		if iTable, ok := v.Addr().Interface().(ITable); ok {
+			tableName = iTable.GetTableName()
+		} else {
+			tableName = unCamelCase(t.Name())
+		}
+
 		//构造一个新的StructInfo
 		structInfo = &StructInfo{
 			Name:t.Name(),
-			TableName:toCamelCase(t.Name()),
+			TableName:tableName,
 			FieldsMap:fieldsMap,
 		}
 		//将新的StructInfo放入Map当缓存用
