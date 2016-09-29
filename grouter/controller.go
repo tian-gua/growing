@@ -1,15 +1,14 @@
 package grouter
 
 import (
-	"net/http"
 	"fmt"
-	"regexp"
+	"net/http"
 	"reflect"
+	"regexp"
 	"strconv"
 )
 
 type handler interface{}
-
 
 //定义控制器的接口,所有接口必须实现 Get Post 方法
 type controller struct {
@@ -17,13 +16,15 @@ type controller struct {
 	postHandlers map[string]handler
 	getnofund    handler
 }
+
 //初始化控制器
-var baseController = &controller{getHandlers: make(map[string]handler), postHandlers:make(map[string]handler)}
+var baseController = &controller{getHandlers: make(map[string]handler), postHandlers: make(map[string]handler)}
 
 //添加get处理器
 func (c *controller) addGet(pattern string, h handler) {
 	c.getHandlers[pattern] = h
 }
+
 //添加post处理器
 func (c *controller) addPost(pattern string, h handler) {
 	c.postHandlers[pattern] = h
@@ -42,8 +43,9 @@ func (c *controller) get(pattern string, rw http.ResponseWriter, req *http.Reque
 
 	}
 }
+
 //请求post方法
-func (c *controller)  post(pattern string, rw http.ResponseWriter, req *http.Request) {
+func (c *controller) post(pattern string, rw http.ResponseWriter, req *http.Request) {
 	if h, ok := c.postHandlers[TrimParameter(pattern)]; ok {
 		if checkHandler(h) {
 			do(rw, req, h)
@@ -53,6 +55,7 @@ func (c *controller)  post(pattern string, rw http.ResponseWriter, req *http.Req
 		rw.WriteHeader(http.StatusNotFound)
 	}
 }
+
 //trim掉&后面的参数
 func TrimParameter(url string) string {
 	reg, err := regexp.Compile("[/\\w]*")
@@ -62,7 +65,6 @@ func TrimParameter(url string) string {
 	}
 	return reg.FindString(url)
 }
-
 
 //检查处理器是不是func
 func checkHandler(h handler) bool {

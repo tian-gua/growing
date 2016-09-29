@@ -1,8 +1,8 @@
 package gsession
 
 import (
-	"net/http"
 	"github.com/aidonggua/growing/cache"
+	"net/http"
 )
 
 //session对象
@@ -41,16 +41,14 @@ func GetSession(rw http.ResponseWriter, req *http.Request) (*Session, error) {
 	return session.(*Session), nil
 }
 
-
 //新建一个session
 func newSession(rw http.ResponseWriter) (*Session, error) {
 	sessionId := getSessionId()
-	ck := &http.Cookie{Name:"gsessionid", Value:sessionId, MaxAge:0, Path:"/", HttpOnly:true }
+	ck := &http.Cookie{Name: "gsessionid", Value: sessionId, MaxAge: 0, Path: "/", HttpOnly: true}
 	http.SetCookie(rw, ck)
 	//新建一个session对象
-	newSession := &Session{attributes:make(map[string]interface{})}
+	newSession := &Session{attributes: make(map[string]interface{})}
 	//新session放缓存里
 	gcache.Put(sessionId, newSession, gcache.IdleMode, Session_time)
 	return newSession, nil
 }
-

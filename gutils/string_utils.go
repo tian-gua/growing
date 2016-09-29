@@ -7,6 +7,7 @@ func IsEmpty(str *string) bool {
 	}
 	return false
 }
+
 //判断字符串指针的值是否不为空
 func IsNotEmpty(str *string) bool {
 	if str == nil || len(*str) == 0 {

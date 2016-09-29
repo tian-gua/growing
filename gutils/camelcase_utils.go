@@ -1,9 +1,9 @@
 package gutils
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
-	"fmt"
 )
 
 //将字符串转为驼峰命名规则,并且首字母大写
@@ -14,7 +14,7 @@ func ToCamelCase(str string) string {
 		return ""
 	}
 	//查找所有的_x 字符串,并替换成X
-	reg, err := regexp.Compile("_([a-z])");
+	reg, err := regexp.Compile("_([a-z])")
 	if err != nil {
 		fmt.Println(err)
 		return str
@@ -60,4 +60,3 @@ func UnCamelCase(str string) string {
 	//如果转换完成自后 第一个 字符串 为 _ ,则删掉_
 	return strings.TrimLeft(str, "_")
 }
-

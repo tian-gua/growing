@@ -4,7 +4,6 @@ import (
 	"database/sql"
 )
 
-
 //初始化数据库连接
 func InitDB(dialect, connStr string) {
 	//链接数据库

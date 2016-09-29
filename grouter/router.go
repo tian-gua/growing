@@ -9,7 +9,7 @@ func Route(requestMapping string, h handler, method ...string) {
 	if len(method) == 0 {
 		baseController.addGet(requestMapping, h)
 		baseController.addPost(requestMapping, h)
-	}else {
+	} else {
 		m := method[0]
 		if strings.ToUpper(m) == "POST" {
 			baseController.addPost(requestMapping, h)
@@ -20,5 +20,3 @@ func Route(requestMapping string, h handler, method ...string) {
 	}
 
 }
-
-

@@ -1,16 +1,15 @@
 package gutils
 
 import (
-	"os"
 	"bufio"
 	"fmt"
-	"regexp"
-	"strings"
 	"io"
+	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 )
-
 
 //获取ini文件的配置
 //[default]
@@ -47,7 +46,6 @@ func GetIniProperties(path string) (map[string]map[string]string, error) {
 	}
 	return properties, nil
 }
-
 
 //是否为标题
 //[xxx]

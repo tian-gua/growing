@@ -1,17 +1,16 @@
 package gsession
 
 import (
-	"io"
 	"crypto/rand"
 	"encoding/base64"
+	"io"
 )
-
 
 //生成sessionid
 func getSessionId() string {
 	b := make([]byte, 32)
 	//取32个随机数
-	_, err := io.ReadFull(rand.Reader, b);
+	_, err := io.ReadFull(rand.Reader, b)
 	if err != nil {
 		panic(err)
 	}

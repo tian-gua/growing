@@ -10,8 +10,6 @@ func init() {
 	http.HandleFunc("/static/", http.FileServer(http.Dir("./template")).ServeHTTP)
 }
 
-
-
 //根据 url 和 method 查找 对应的 处理方法
 func dispath(rw http.ResponseWriter, req *http.Request) {
 	//获得请求地址和方法
@@ -19,7 +17,7 @@ func dispath(rw http.ResponseWriter, req *http.Request) {
 	method := req.Method
 
 	//根据http请求的url和Mehtod 执行相应的方法
-	switch method  {
+	switch method {
 	case "GET":
 		baseController.get(url, rw, req)
 	case "POST":
@@ -27,4 +25,3 @@ func dispath(rw http.ResponseWriter, req *http.Request) {
 	}
 
 }
-

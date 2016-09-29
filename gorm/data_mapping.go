@@ -1,8 +1,8 @@
 package gorm
 
 import (
-	"reflect"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -23,7 +23,6 @@ type StructField struct {
 	tableFieldName string        //表属性名
 	tableFieldType string        //表属性类型
 }
-
 
 //获得结构体的信息
 func GetStructInfo(target interface{}) *StructInfo {
@@ -70,11 +69,11 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 			if len(tableField) != 0 {
 				//构造一个新的StructField
 				sf := &StructField{
-					name:structField.Name,
-					tableFieldName:tableField,
-					tableFieldType:getDataType(t.Kind().String()),
-					value:structFieldValue,
-					stringValue:parseValueToDBString(structFieldValue),
+					name:           structField.Name,
+					tableFieldName: tableField,
+					tableFieldType: getDataType(t.Kind().String()),
+					value:          structFieldValue,
+					stringValue:    parseValueToDBString(structFieldValue),
 				}
 				//将新的StructField放入Map
 				fieldsMap[tableField] = sf
@@ -93,14 +92,12 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 
 		//构造一个新的StructInfo
 		structInfo = &StructInfo{
-			Name:t.Name(),
-			TableName:tableName,
-			FieldsMap:fieldsMap,
+			Name:      t.Name(),
+			TableName: tableName,
+			FieldsMap: fieldsMap,
 		}
 		//将新的StructInfo放入Map当缓存用
 		StructInfoMap[t] = structInfo
 	}
 	return structInfo
 }
-
-

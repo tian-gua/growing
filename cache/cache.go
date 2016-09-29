@@ -1,14 +1,14 @@
 package gcache
 
 import (
-	"time"
 	"errors"
 	"fmt"
+	"time"
 )
 
 const (
 	IdleMode = iota //闲置模式
-	Expire        //过期模式
+	Expire          //过期模式
 )
 
 //缓存
@@ -30,7 +30,6 @@ type cache struct {
 
 //定义一个字典来存放key 和 cache
 var cacheManager = make(map[string]cache)
-
 
 //实现Icache接口的get方法
 func (this *cache) get() (interface{}, error) {
@@ -69,7 +68,6 @@ func (this *cache) updateLifeTime(t time.Time) {
 	*this.lifetime = t
 }
 
-
 //实现cache包的公共方法,用于获取数据
 func Get(key string) interface{} {
 	//从字典子查找是否存在cache对象,如果存在返回cache对象的value属性
@@ -83,7 +81,6 @@ func Get(key string) interface{} {
 	}
 	return nil
 }
-
 
 //实现cache包的公共方法,用于存放数据
 func Put(key string, value interface{}, mode int, idleTime time.Duration) {

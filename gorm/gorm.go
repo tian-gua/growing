@@ -2,11 +2,11 @@ package gorm
 
 import (
 	"database/sql"
-	"reflect"
-	"github.com/aidonggua/growing/gutils"
 	"fmt"
-	"time"
+	"github.com/aidonggua/growing/gutils"
+	"reflect"
 	"strings"
+	"time"
 )
 
 var (
@@ -39,7 +39,6 @@ func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
 	return result.RowsAffected()
 }
 
-
 //删除一条记录
 func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 	//生成sql
@@ -58,7 +57,6 @@ func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 	}
 	return result.RowsAffected()
 }
-
 
 //查询记录
 func Query(param, resultSet interface{}, gtx ...*Transaction) error {
@@ -170,7 +168,6 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 	return nil
 }
 
-
 //执行之定义sql查询语句
 func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) error {
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
@@ -268,7 +265,6 @@ func getStatement(sqlStr string, gtx ...*Transaction) (*sql.Stmt, error) {
 	}
 	return stmt, err
 }
-
 
 //关闭DB对象
 func CloseDB() {

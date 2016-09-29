@@ -1,10 +1,9 @@
 package gorm
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
-
 
 //根据结构体生成查询sql
 func ParseQuerySql(obj interface{}) string {
@@ -30,7 +29,6 @@ func ParseQuerySql(obj interface{}) string {
 	return sqlStr
 }
 
-
 //根据结构体生成查询sql
 func ParseQueryAllSql(obj interface{}) string {
 	var fieldList string = ""
@@ -45,7 +43,6 @@ func ParseQueryAllSql(obj interface{}) string {
 	sqlStr := fmt.Sprintf("select %s from %s", strings.TrimRight(fieldList, ","), tName)
 	return sqlStr
 }
-
 
 //根据结构体生成删除sql
 func ParseDeleteByPrimaryKeySql(obj interface{}) string {
@@ -63,7 +60,6 @@ func ParseDeleteByPrimaryKeySql(obj interface{}) string {
 	}
 	return sqlStr
 }
-
 
 //根据结构体生成插入或者更新sql
 func ParseSaveSql(obj interface{}) string {
@@ -108,4 +104,3 @@ func ParseSaveSql(obj interface{}) string {
 	}
 	return sqlStr
 }
-

@@ -1,11 +1,10 @@
 package gorm
 
 import (
-	"strings"
-	"regexp"
 	"fmt"
+	"regexp"
+	"strings"
 )
-
 
 //结构体类型和数据库类型转换
 func getDataType(structType string) string {
@@ -31,7 +30,7 @@ func toCamelCase(str string) string {
 		return ""
 	}
 	//查找所有的_x 字符串,并替换成X
-	reg, err := regexp.Compile("_([a-z])");
+	reg, err := regexp.Compile("_([a-z])")
 	if err != nil {
 		fmt.Println(err)
 		return str
@@ -77,4 +76,3 @@ func unCamelCase(str string) string {
 	//如果转换完成自后 第一个 字符串 为 _ ,则删掉_
 	return strings.TrimLeft(str, "_")
 }
-

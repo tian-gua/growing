@@ -36,5 +36,3 @@ func Begin() (*Transaction, error) {
 	transaction.tx = tx
 	return transaction, nil
 }
-
-

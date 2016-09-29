@@ -1,16 +1,16 @@
 package gorm
 
 import (
+	"database/sql"
+	"fmt"
 	"reflect"
 	"strconv"
 	"time"
-	"database/sql"
-	"fmt"
 )
 
 //将v2的值赋给v1
 func setRawData(v reflect.Value, rawData sql.RawBytes) {
-	switch t := v.Interface().(type){
+	switch t := v.Interface().(type) {
 	case string:
 		v.Set(reflect.ValueOf(string(rawData)))
 	case int:
@@ -27,13 +27,12 @@ func setRawData(v reflect.Value, rawData sql.RawBytes) {
 	}
 }
 
-
 //将接收的 值反射 转换成字符串类型
 func parseValueToDBString(v reflect.Value) string {
 	//如果v是指针，则取指向的值
 	v = reflect.Indirect(v)
 	//根据值得类型转换字符串
-	switch t := v.Interface().(type){
+	switch t := v.Interface().(type) {
 	case string:
 		return "'" + v.String() + "'"
 	case int:
@@ -43,9 +42,8 @@ func parseValueToDBString(v reflect.Value) string {
 	case time.Time:
 		return "'" + t.Format("2006-01-02 15:04:05") + "'"
 	}
-	return "";
+	return ""
 }
-
 
 //判断是否是零值
 func isZero(v reflect.Value) bool {

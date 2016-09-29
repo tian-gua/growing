@@ -1,23 +1,20 @@
 package gutils
 
 import (
-	"fmt"
-	"os"
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
 )
-
-
-
 
 //遍历文件夹  查找文件
 func ListPath(dir, fileName string) string {
 	targetPath := ""
 	err_ := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-		if ( f == nil ) {
+		if f == nil {
 			return err
 		}
 		if f.IsDir() {
@@ -40,8 +37,6 @@ type FileInfo struct {
 	FileNames []string
 	fileSize  int64
 }
-
-
 
 //查找文件重复文件
 func FoundRepeatFile(dir string) map[string]FileInfo {
@@ -80,24 +75,18 @@ func FoundRepeatFile(dir string) map[string]FileInfo {
 	return repeatFile
 }
 
-
-
 //获得文件名,忽略掉路径,把路径按"/"切割,取最后一截
 func GetFileName(path string) string {
 	name := strings.Split(path, "/")
 	//fmt.Printf("%v", name)
-	return name[len(name) - 1]
+	return name[len(name)-1]
 }
-
-
-
-
 
 //写字符串到文件里,拼到文件的末尾
 func WriteTextToFile(path, text string) error {
 	//获得一个文件指针
 	//os.O_APPEND:是否拼到文件末尾
-	file, err := os.OpenFile(path, os.O_WRONLY | os.O_APPEND, 0666)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		//抛出一个异常
 		panic(errors.New("打开文件错误!"))
@@ -112,7 +101,6 @@ func WriteTextToFile(path, text string) error {
 	writer.WriteString(text)
 	return writer.Flush()
 }
-
 
 //读取文件内所有字符串
 func ReadFileString(path string) error {
@@ -134,13 +122,11 @@ func ReadFileString(path string) error {
 	//如果文件已经读完, 会返回一个erro: EOF
 	for err == nil {
 		//循环读取文件内的字符串
-		str, err = reader.ReadString('\n');
+		str, err = reader.ReadString('\n')
 		fmt.Printf(str)
 	}
 	return err
 }
-
-
 
 //读取文件内所有字符串2,通过切片实现
 func ReadFileString2(path string) {
@@ -161,7 +147,7 @@ func ReadFileString2(path string) {
 		case num > 0:
 			n, e := os.Stdout.Write(buf[:])
 			//如果读出来的数量和写进去的数量不同
-			if ( num != n) {
+			if num != n {
 				panic(e)
 			}
 		case num == 0:
@@ -172,7 +158,6 @@ func ReadFileString2(path string) {
 		}
 	}
 }
-
 
 //复制文件
 func CopyFile(from, to string) (written int64, err error) {
@@ -188,7 +173,7 @@ func CopyFile(from, to string) (written int64, err error) {
 		file_from.Close()
 	}()
 	//获得一个文件指针
-	file_to, err := os.OpenFile(to, os.O_WRONLY | os.O_CREATE, 0644)
+	file_to, err := os.OpenFile(to, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		//抛出一个异常
 		panic(errors.New("打开目标文件错误!"))
