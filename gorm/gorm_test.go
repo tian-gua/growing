@@ -15,14 +15,14 @@ type practice struct {
 func Test_gorm_query(t *testing.T) {
 	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
 	p := new([]practice)
-	err := Query(&practice{Id: 3}, p)
+	err := QueryAll(p)
 	if err != nil {
 		panic(err)
 	}
 	t.Log(p)
 
 	p = new([]practice)
-	err = QueryAll(p)
+	err = Query(&practice{Id: 3}, p)
 	if err != nil {
 		panic(err)
 	}

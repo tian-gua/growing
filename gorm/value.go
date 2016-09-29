@@ -61,13 +61,3 @@ func isZero(v reflect.Value) bool {
 	}
 	return true
 }
-
-//获得空切片元素的类型
-func getEmptySliceValue(slice reflect.Value) reflect.Value {
-	t := slice.Type()
-	//给切片元素开辟一个空间
-	vSlice := reflect.MakeSlice(t, 1, 1)
-	//获得 切片元素 的反射信息
-	element := vSlice.Slice(0, 1).Index(0)
-	return element
-}

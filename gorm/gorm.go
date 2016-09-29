@@ -61,10 +61,8 @@ func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 //查询记录
 func Query(param, resultSet interface{}, gtx ...*Transaction) error {
 	pramValue := reflect.Indirect(reflect.ValueOf(param))
-	rsValue := reflect.Indirect(reflect.ValueOf(resultSet))
-	//make一个slice,因为可能resultSlice可能已经存在值
-	//这里其实用不用都行,这里make一个或者用户自己new一个都OK
-	//newSlice := reflect.MakeSlice(rsValue.Type(), 0, 0)
+	resultSetData := reflect.Indirect(reflect.ValueOf(resultSet))
+
 	sqlStr := ParseQuerySql(param)
 
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
@@ -105,11 +103,11 @@ func Query(param, resultSet interface{}, gtx ...*Transaction) error {
 			colName := columns[i]
 			setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
 		}
-		rsValue = reflect.Append(rsValue, temporaryValue)
+		resultSetData = reflect.Append(resultSetData, temporaryValue)
 	}
 
 	//更新target的值
-	reflect.Indirect(reflect.ValueOf(resultSet)).Set(rsValue)
+	reflect.Indirect(reflect.ValueOf(resultSet)).Set(resultSetData)
 	return nil
 }
 
@@ -117,11 +115,13 @@ func Query(param, resultSet interface{}, gtx ...*Transaction) error {
 func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 	//获得target的反射信息
 	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
-	//获得 切片元素 的反射信息
-	element := getEmptySliceValue(resultsetRawData)
-	elementType := element.Type()
+	if resultsetRawData.Type().Kind() != reflect.Slice {
+		return fmt.Errorf("no slice")
+	}
+	//获取切片的元素的类型
+	elementType := resultsetRawData.Type().Elem()
 	//生成sql
-	sqlStr := ParseQueryAllSql(element.Interface())
+	sqlStr := ParseQueryAllSql(reflect.New(elementType).Interface())
 
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
@@ -199,8 +199,8 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 	}
 	//如果传过来的是一个切片
 	if reflect.Slice == resultsetRawData.Type().Kind() {
-
-		elementType := getEmptySliceValue(resultsetRawData).Type()
+		//获取切片
+		elementType := resultsetRawData.Type().Elem()
 		var index int = 0
 		//遍历所有记录
 		for rows.Next() {
