@@ -18,5 +18,4 @@ func Route(requestMapping string, h handler, method ...string) {
 			baseController.addGet(requestMapping, h)
 		}
 	}
-
 }

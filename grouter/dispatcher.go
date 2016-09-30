@@ -23,5 +23,4 @@ func dispath(rw http.ResponseWriter, req *http.Request) {
 	case "POST":
 		baseController.post(url, rw, req)
 	}
-
 }

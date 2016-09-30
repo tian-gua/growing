@@ -9,11 +9,6 @@ import (
 	"time"
 )
 
-var (
-	//数据库连接对象
-	gdb *sql.DB = nil
-)
-
 //插入或者更新一条记录
 //插入和更新取决于 id 字段是否为0
 func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
@@ -248,6 +243,11 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 
 //获得statement,有事务和非事务2种情况
 func getStatement(sqlStr string, gtx ...*Transaction) (*sql.Stmt, error) {
+	//校验是否初始化
+	if !isInit {
+		panic("no db init")
+	}
+
 	var stmt *sql.Stmt
 	var err error
 	//判断是否在事务中执行
