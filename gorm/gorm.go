@@ -111,7 +111,7 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 	//获得target的反射信息
 	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
 	if resultsetRawData.Type().Kind() != reflect.Slice {
-		return fmt.Errorf("no slice")
+		return fmt.Errorf("param not slice")
 	}
 	//获取切片的元素的类型
 	elementType := resultsetRawData.Type().Elem()
