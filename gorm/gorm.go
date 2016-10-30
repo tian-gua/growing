@@ -209,7 +209,12 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 			if reflect.Struct == elementType.Kind() {
 				for i := 0; i < colNum; i++ {
 					colName := columns[i]
-					setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
+					temporaryV := temporaryValue.FieldByName(toCamelCase(colName))
+					//判断结构体是否有对应的属性，或者该属性是否可修改
+					//如果判断失败则跳过此属性的复制
+					if temporaryV.CanSet() {
+						setRawData(temporaryV, values[i])
+					}
 				}
 			} else {
 				//如果是 基础类型 则直接赋值
