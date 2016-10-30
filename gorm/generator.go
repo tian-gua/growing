@@ -2,6 +2,7 @@ package gorm
 
 import (
 	"database/sql"
+	"strings"
 )
 
 //根据数据库的table生成struct
@@ -47,7 +48,7 @@ func Generate(tableName string) (string, error) {
 		ftype = getDataType(ftype)
 		fieldTypes = append(fieldTypes, ftype)
 	}
-	structString := "type " + toCamelCase(tableName) + " struct{\n"
+	structString := "type " + strings.Title(tableName) + " struct{\n"
 	for i, v := range fields {
 		structString += "\t" + v + "\t" + fieldTypes[i] + "\t\t`field:\"" + unCamelCase(v) + "\"`" + "\n"
 	}
