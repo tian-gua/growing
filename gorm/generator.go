@@ -47,7 +47,7 @@ func Generate(tableName string) (string, error) {
 		ftype = getDataType(ftype)
 		fieldTypes = append(fieldTypes, ftype)
 	}
-	structString := "type " + tableName + " struct{\n"
+	structString := "type " + toCamelCase(tableName) + " struct{\n"
 	for i, v := range fields {
 		structString += "\t" + v + "\t" + fieldTypes[i] + "\t\t`field:\"" + unCamelCase(v) + "\"`" + "\n"
 	}

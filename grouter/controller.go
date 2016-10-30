@@ -94,7 +94,6 @@ func do(rw http.ResponseWriter, req *http.Request, h handler) {
 			if "Request" == paramType.Elem().Name() {
 				paramSlice = append(paramSlice, reflect.ValueOf(req))
 			}
-			panic("param should'nt be ptr")
 		} else {
 			if "ResponseWriter" == paramType.Name() {
 				paramSlice = append(paramSlice, reflect.ValueOf(rw))
