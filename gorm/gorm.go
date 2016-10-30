@@ -14,8 +14,10 @@ import (
 func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
 	var err error
 	//生成sql
-	sqlStr := ParseSaveSql(obj)
-
+	sqlStr, err := ParseSaveSql(obj)
+	if err != nil {
+		return 0, err
+	}
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	stmt, err := getStatement(sqlStr, gtx...)
@@ -37,8 +39,10 @@ func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
 //删除一条记录
 func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 	//生成sql
-	sqlStr := ParseDeleteByPrimaryKeySql(obj)
-
+	sqlStr, err := ParseDeleteByPrimaryKeySql(obj)
+	if err != nil {
+		return 0, err
+	}
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	stmt, err := getStatement(sqlStr, gtx...)
@@ -58,8 +62,10 @@ func Query(param, resultSet interface{}, gtx ...*Transaction) error {
 	pramValue := reflect.Indirect(reflect.ValueOf(param))
 	resultSetData := reflect.Indirect(reflect.ValueOf(resultSet))
 
-	sqlStr := ParseQuerySql(param)
-
+	sqlStr, err := ParseQuerySql(param)
+	if err != nil {
+		return err
+	}
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	stmt, err := getStatement(sqlStr, gtx...)
@@ -111,13 +117,15 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 	//获得target的反射信息
 	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
 	if resultsetRawData.Type().Kind() != reflect.Slice {
-		return fmt.Errorf("param not slice")
+		return fmt.Errorf("not slice param")
 	}
 	//获取切片的元素的类型
 	elementType := resultsetRawData.Type().Elem()
 	//生成sql
-	sqlStr := ParseQueryAllSql(reflect.New(elementType).Interface())
-
+	sqlStr, err := ParseQueryAllSql(reflect.New(elementType).Interface())
+	if err != nil {
+		return err
+	}
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	stmt, err := getStatement(sqlStr, gtx...)

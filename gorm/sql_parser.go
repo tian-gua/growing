@@ -6,11 +6,14 @@ import (
 )
 
 //根据结构体生成查询sql
-func ParseQuerySql(obj interface{}) string {
+func ParseQuerySql(obj interface{}) (string, error) {
 	var fieldList string = ""
 	var conditionList string = ""
 	//获得结构体反射的信息
-	structInfo := GetStructInfo(obj)
+	structInfo, err := GetStructInfo(obj)
+	if err != nil {
+		return "", err
+	}
 	tName := structInfo.TableName
 	for _, structFiled := range structInfo.FieldsMap {
 		//拼接字段集合
@@ -26,14 +29,17 @@ func ParseQuerySql(obj interface{}) string {
 	sqlStr := fmt.Sprintf("select %s from %s where %s", strings.TrimRight(fieldList, ","), tName, strings.TrimRight(conditionList, "and "))
 	//trim掉where 因为 conditionList可能为空
 	sqlStr = strings.Trim(sqlStr, " where")
-	return sqlStr
+	return sqlStr, nil
 }
 
 //根据结构体生成查询sql
-func ParseQueryAllSql(obj interface{}) string {
+func ParseQueryAllSql(obj interface{}) (string, error) {
 	var fieldList string = ""
 	//获得结构体反射的信息
-	structInfo := GetStructInfo(obj)
+	structInfo, err := GetStructInfo(obj)
+	if err != nil {
+		return "", err
+	}
 	tName := structInfo.TableName
 	for _, structFiled := range structInfo.FieldsMap {
 		//拼接字段集合
@@ -41,15 +47,18 @@ func ParseQueryAllSql(obj interface{}) string {
 	}
 	//trim掉逗号
 	sqlStr := fmt.Sprintf("select %s from %s", strings.TrimRight(fieldList, ","), tName)
-	return sqlStr
+	return sqlStr, nil
 }
 
 //根据结构体生成删除sql
-func ParseDeleteByPrimaryKeySql(obj interface{}) string {
+func ParseDeleteByPrimaryKeySql(obj interface{}) (string, error) {
 	//用于存放sql字段
 	var sqlStr string = ""
 	//获得结构体反射的信息
-	structInfo := GetStructInfo(obj)
+	structInfo, err := GetStructInfo(obj)
+	if err != nil {
+		return "", err
+	}
 	tName := structInfo.TableName
 	//获得要删除的id
 	if structField, ok := structInfo.FieldsMap["id"]; ok && !isZero(structField.value) {
@@ -58,17 +67,20 @@ func ParseDeleteByPrimaryKeySql(obj interface{}) string {
 	} else {
 		panic(fmt.Errorf("id not found or value is zero"))
 	}
-	return sqlStr
+	return sqlStr, nil
 }
 
 //根据结构体生成插入或者更新sql
-func ParseSaveSql(obj interface{}) string {
+func ParseSaveSql(obj interface{}) (string, error) {
 	//用于判断是否为保存还是更新
 	var isInsert bool = false
 	//用于存放sql字段
 	var sqlStr string = ""
-	//获得类型的信息
-	structInfo := GetStructInfo(obj)
+	//获得结构体反射的信息
+	structInfo, err := GetStructInfo(obj)
+	if err != nil {
+		return "", err
+	}
 	tName := structInfo.TableName
 	//取id得值判断是insert 还是 update
 	id := structInfo.FieldsMap["id"].stringValue
@@ -102,5 +114,5 @@ func ParseSaveSql(obj interface{}) string {
 		}
 		sqlStr = fmt.Sprintf("update %s set %s where id=%s", tName, strings.TrimRight(kvList, ","), id)
 	}
-	return sqlStr
+	return sqlStr, nil
 }

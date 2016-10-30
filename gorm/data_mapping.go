@@ -25,19 +25,21 @@ type StructField struct {
 }
 
 //获得结构体的信息
-func GetStructInfo(target interface{}) *StructInfo {
-	v := reflect.Indirect(reflect.ValueOf(target))
-	t := v.Type()
+func GetStructInfo(target interface{}) (*StructInfo, error) {
+	v := reflect.ValueOf(target)
+	if v.Kind() != reflect.Ptr {
+		return nil, fmt.Errorf("not ptr param")
+	}
+	t := v.Elem().Type()
 	//判断target的类型
 	if t.Kind() != reflect.Struct {
-		fmt.Println("not struct")
-		return nil
+		return nil, fmt.Errorf("not struct param")
 	}
-	return GetReflectInfo(t, v)
+	return GetReflectInfo(t, v.Elem())
 }
 
 //获得结构体的反射的信息
-func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
+func GetReflectInfo(t reflect.Type, v reflect.Value) (*StructInfo, error) {
 
 	var structInfo *StructInfo
 
@@ -55,7 +57,7 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 				//更新字段的stringValue属性
 				structField.stringValue = parseValueToDBString(v.FieldByName(structField.name))
 			} else {
-				panic(fmt.Errorf("StructField [%s] is can not set or is not valid", structInfo.FieldsMap[key].name))
+				return nil, fmt.Errorf("StructField [%s] is can not set or is not valid", structInfo.FieldsMap[key].name)
 			}
 		}
 	} else {
@@ -99,5 +101,5 @@ func GetReflectInfo(t reflect.Type, v reflect.Value) *StructInfo {
 		//将新的StructInfo放入Map当缓存用
 		StructInfoMap[t] = structInfo
 	}
-	return structInfo
+	return structInfo, nil
 }
