@@ -2,7 +2,6 @@ package gorm
 
 import (
 	"database/sql"
-	"strings"
 )
 
 //根据数据库的table生成struct
