@@ -82,7 +82,8 @@ func ParseSaveSql(obj interface{}) (string, error) {
 		return "", err
 	}
 	tName := structInfo.TableName
-	//取id得值判断是insert 还是 update
+
+	/**取id得值判断是insert 还是 update*/
 	id := structInfo.FieldsMap["id"].stringValue
 	if "0" == id {
 		isInsert = true
@@ -114,5 +115,63 @@ func ParseSaveSql(obj interface{}) (string, error) {
 		}
 		sqlStr = fmt.Sprintf("update %s set %s where id=%s", tName, strings.TrimRight(kvList, ","), id)
 	}
+	return sqlStr, nil
+}
+
+//生成insert into语句
+//isSelective属性为ture的话，零值的字段不会被拼到sql语句中
+func ParseInsertSql(obj interface{}, isSelective bool) (string, error) {
+
+	/**获得结构体反射的信息*/
+	structInfo, err := GetStructInfo(obj)
+	if err != nil {
+		return "", err
+	}
+	tName := structInfo.TableName
+
+	var valueList string = ""
+	var fieldList string = ""
+	/**拼sql*/
+	for _, structField := range structInfo.FieldsMap {
+		if "id" == structField.tableFieldName {
+			continue
+		} else if !isZero(structField.value) || !isSelective {
+			fieldList += structField.tableFieldName + ","
+			valueList += structField.stringValue + ","
+		}
+	}
+
+	//去掉右边的逗号
+	sqlStr := fmt.Sprintf("insert into %s(id,%s)values(default,%s)", tName, strings.TrimRight(fieldList, ","), strings.TrimRight(valueList, ","))
+	return sqlStr, nil
+}
+
+
+//生成update语句
+//isSelective属性为ture的话，零值的字段不会被拼到sql语句中
+func ParseUpdateSql(obj interface{}, isSelective bool) (string, error) {
+
+	/**获得结构体反射的信息*/
+	structInfo, err := GetStructInfo(obj)
+	if err != nil {
+		return "", err
+	}
+	tName := structInfo.TableName
+	id := structInfo.FieldsMap["id"].stringValue
+
+	var kvList string = ""
+	//拼sql
+	for _, structField := range structInfo.FieldsMap {
+		if "id" == structField.tableFieldName {
+			continue
+		} else {
+			//如果属性为零值则不更新
+			if !isZero(structField.value) || !isSelective {
+				kvList += structField.tableFieldName + "=" + structField.stringValue + ","
+			}
+		}
+	}
+
+	sqlStr := fmt.Sprintf("update %s set %s where id=%s", tName, strings.TrimRight(kvList, ","), id)
 	return sqlStr, nil
 }

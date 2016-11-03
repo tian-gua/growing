@@ -10,6 +10,7 @@ type practice struct {
 	Id         int       `field:"id"`
 	CreateTime time.Time `field:"create_time"`
 	Name       string    `field:"name"`
+	Sex        int       `field:"sex"`
 }
 
 func Test_gorm_query(t *testing.T) {
@@ -45,7 +46,7 @@ func Test_gorm_delete(t *testing.T) {
 	t.Log(count)
 }
 
-func Test_gorm_update(t *testing.T) {
+func Test_gorm_save_update(t *testing.T) {
 	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
 	id, err := Save(&practice{Id: 2, Name: "saf", CreateTime: time.Now()})
 	if err != nil {
@@ -54,9 +55,45 @@ func Test_gorm_update(t *testing.T) {
 	t.Log(id)
 }
 
-func Test_gorm_save(t *testing.T) {
+func Test_gorm_save_insert(t *testing.T) {
 	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
 	id, err := Save(&practice{Name: "aa", CreateTime: time.Now()})
+	if err != nil {
+		panic(err)
+	}
+	t.Log(id)
+}
+
+func Test_gorm_insert(t *testing.T) {
+	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
+	id, err := Insert(&practice{Name: "aa", CreateTime: time.Now()})
+	if err != nil {
+		panic(err)
+	}
+	t.Log(id)
+}
+
+func Test_gorm_insertSelective(t *testing.T) {
+	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
+	id, err := InsertSelective(&practice{Name: "aa", CreateTime: time.Now()})
+	if err != nil {
+		panic(err)
+	}
+	t.Log(id)
+}
+
+func Test_gorm_update(t *testing.T) {
+	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
+	id, err := Update(&practice{Name: "aa", CreateTime: time.Now()})
+	if err != nil {
+		panic(err)
+	}
+	t.Log(id)
+}
+
+func Test_gorm_updateSelective(t *testing.T) {
+	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
+	id, err := UpdateSelective(&practice{Name: "aa", CreateTime: time.Now()})
 	if err != nil {
 		panic(err)
 	}

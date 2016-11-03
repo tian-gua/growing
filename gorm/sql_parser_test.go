@@ -23,4 +23,8 @@ func Test_ParseSql(t *testing.T) {
 	t.Log(ParseSaveSql(&userAgent{Id: 1, Name: "aaa", Sex: 1}))
 	t.Log(ParseSaveSql(&userAgent{Name: "aaa", Age: 22}))
 	t.Log(ParseSaveSql(&userAgent{Id: 1, Name: "阿斯蒂芬", Age: 44, Sex: 1}))
+	t.Log(ParseInsertSql(&userAgent{Name: "阿斯蒂芬", Age: 44, Sex: 0}, true))
+	t.Log(ParseInsertSql(&userAgent{Name: "阿斯蒂芬", Age: 44, Sex: 0}, false))
+	t.Log(ParseUpdateSql(&userAgent{Id: 1, Name: "阿斯蒂芬", Age: 44, Sex: 0}, true))
+	t.Log(ParseUpdateSql(&userAgent{Id: 1, Name: "阿斯蒂芬", Age: 44, Sex: 0}, false))
 }

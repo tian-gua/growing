@@ -36,6 +36,61 @@ func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
 	return result.RowsAffected()
 }
 
+/**有选择的插入记录，如果字段为零值则不插入*/
+func InsertSelective(obj interface{}, gtx ...*Transaction) (int64, error) {
+	return insertOrupdate(obj, true, true, gtx...)
+}
+
+/**插入记录*/
+func Insert(obj interface{}, gtx ...*Transaction) (int64, error) {
+	return insertOrupdate(obj, false, true, gtx...)
+}
+
+/**有选择的更新记录，如果字段为零值则不更新*/
+func UpdateSelective(obj interface{}, gtx ...*Transaction) (int64, error) {
+	return insertOrupdate(obj, true, false, gtx...)
+}
+
+/**更新记录*/
+func Update(obj interface{}, gtx ...*Transaction) (int64, error) {
+	return insertOrupdate(obj, false, false, gtx...)
+}
+
+func insertOrupdate(obj interface{}, isSelective bool, isInsert bool, gtx ...*Transaction) (int64, error) {
+	var err error
+	var sqlStr string
+
+	/**生成sql语句*/
+	if isInsert {
+		sqlStr, err = ParseInsertSql(obj, isSelective)
+	} else {
+		sqlStr, err = ParseUpdateSql(obj, isSelective)
+	}
+	if err != nil {
+		return 0, err
+	}
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
+	/**获得声明*/
+	stmt, err := getStatement(sqlStr, gtx...)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	/**执行sql*/
+	result, err := stmt.Exec()
+	if err != nil {
+		return 0, err
+	}
+
+	/**如果是insert 返回插入记录的id 否则返回 更新的条数*/
+	if isInsert {
+		return result.LastInsertId()
+	}
+	return result.RowsAffected()
+}
+
 //删除一条记录
 func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 	//生成sql
