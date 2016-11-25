@@ -11,6 +11,9 @@ type Transaction struct {
 	tx *sql.Tx
 }
 
+//nil, 不适用事务时,可以用到此变量
+var nilTs *Transaction
+
 //提交
 func (this *Transaction) Commit() {
 	err := this.tx.Commit()
@@ -69,4 +72,29 @@ func TsHook(tsf TsFunc) error {
 		panic(err)
 	}
 	return nil
+}
+
+//获得statement,有事务和非事务2种情况
+func getStatement(sqlStr string, gtx *Transaction) (*sql.Stmt, error) {
+	//校验是否初始化
+	if !isInit {
+		panic("no db init")
+	}
+
+	var stmt *sql.Stmt
+	var err error
+	//判断是否在事务中执行
+	if gtx != nil {
+		stmt, err = gtx.tx.Prepare(sqlStr)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		//从sql.DB里获得stmt
+		stmt, err = gdb.Prepare(sqlStr)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return stmt, err
 }

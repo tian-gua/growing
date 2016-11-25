@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/aidonggua/growing/gutils"
 	"reflect"
-	"strings"
 	"time"
 )
 
+/*
 //插入或者更新一条记录
 //插入和更新取决于 id 字段是否为0
 func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
@@ -35,28 +35,53 @@ func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
 	}
 	return result.RowsAffected()
 }
+*/
 
 /**有选择的插入记录，如果字段为零值则不插入*/
-func InsertSelective(obj interface{}, gtx ...*Transaction) (int64, error) {
-	return insertOrupdate(obj, true, true, gtx...)
+func InsertSelective(obj interface{}) (int64, error) {
+	return TsInsertSelective(nilTs, obj)
+}
+
+/**有选择的插入记录(在事务里)，如果字段为零值则不插入*/
+func TsInsertSelective(gtx *Transaction, obj interface{}) (int64, error) {
+	return insertOrUpdate(obj, true, true, gtx)
 }
 
 /**插入记录*/
-func Insert(obj interface{}, gtx ...*Transaction) (int64, error) {
-	return insertOrupdate(obj, false, true, gtx...)
+func Insert(obj interface{}) (int64, error) {
+	return TsInsert(nilTs, obj)
+}
+
+/**插入记录(在事务里)*/
+func TsInsert(gtx *Transaction, obj interface{}) (int64, error) {
+	return insertOrUpdate(obj, false, true, gtx)
 }
 
 /**有选择的更新记录，如果字段为零值则不更新*/
-func UpdateSelective(obj interface{}, gtx ...*Transaction) (int64, error) {
-	return insertOrupdate(obj, true, false, gtx...)
+func UpdateSelective(obj interface{}) (int64, error) {
+	return TsUpdateSelective(nilTs, obj)
+}
+
+/**有选择的更新记录(在事务里)，如果字段为零值则不更新*/
+func TsUpdateSelective(gtx *Transaction, obj interface{}) (int64, error) {
+	return insertOrUpdate(obj, true, false, gtx)
 }
 
 /**更新记录*/
-func Update(obj interface{}, gtx ...*Transaction) (int64, error) {
-	return insertOrupdate(obj, false, false, gtx...)
+func Update(obj interface{}) (int64, error) {
+	return TsUpdate(nilTs, obj)
 }
 
-func insertOrupdate(obj interface{}, isSelective bool, isInsert bool, gtx ...*Transaction) (int64, error) {
+/**更新记录(在事务里)*/
+func TsUpdate(gtx *Transaction, obj interface{}) (int64, error) {
+	return insertOrUpdate(obj, false, false, gtx)
+}
+
+/**插入或者更新的总方法*/
+//[isSelective]		字段是否可选,如果字段为零值,则不才做此字段
+//[isInsert]		是否是插入语句
+//[gtx]			事务对象,根据是否有值来判断是否在事务里操作
+func insertOrUpdate(obj interface{}, isSelective bool, isInsert bool, gtx *Transaction) (int64, error) {
 	var err error
 	var sqlStr string
 
@@ -72,7 +97,7 @@ func insertOrupdate(obj interface{}, isSelective bool, isInsert bool, gtx ...*Tr
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
 	/**获得声明*/
-	stmt, err := getStatement(sqlStr, gtx...)
+	stmt, err := getStatement(sqlStr, gtx)
 	if err != nil {
 		return 0, err
 	}
@@ -92,7 +117,12 @@ func insertOrupdate(obj interface{}, isSelective bool, isInsert bool, gtx ...*Tr
 }
 
 //删除一条记录
-func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
+func Delete(obj interface{}) (int64, error) {
+	return TsDelete(nilTs, obj)
+}
+
+//删除一条记录(在事务里)
+func TsDelete(gtx *Transaction, obj interface{}) (int64, error) {
 	//生成sql
 	sqlStr, err := ParseDeleteByPrimaryKeySql(obj)
 	if err != nil {
@@ -100,7 +130,7 @@ func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 	}
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
-	stmt, err := getStatement(sqlStr, gtx...)
+	stmt, err := getStatement(sqlStr, gtx)
 	if err != nil {
 		return 0, err
 	}
@@ -112,63 +142,13 @@ func Delete(obj interface{}, gtx ...*Transaction) (int64, error) {
 	return result.RowsAffected()
 }
 
-//查询记录
-func Query(param, resultSet interface{}, gtx ...*Transaction) error {
-	pramValue := reflect.Indirect(reflect.ValueOf(param))
-	resultSetData := reflect.Indirect(reflect.ValueOf(resultSet))
-
-	sqlStr, err := ParseQuerySql(param)
-	if err != nil {
-		return err
-	}
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
-	stmt, err := getStatement(sqlStr, gtx...)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-	//查询
-	rows, err := stmt.Query()
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	//获得所有列
-	columns, err := rows.Columns()
-	if err != nil {
-		return err
-	}
-	//获得列的数量
-	colNum := len(columns)
-	values := make([]sql.RawBytes, colNum)
-	scans := make([]interface{}, colNum)
-	//封装
-	for i := range values {
-		scans[i] = &values[i]
-	}
-	//遍历所有记录
-	for rows.Next() {
-		err := rows.Scan(scans...)
-		if err != nil {
-			return err
-		}
-		//根据反射来新建一个临时value和记录对应的对象
-		var temporaryValue = reflect.New(pramValue.Type()).Elem()
-		for i := 0; i < colNum; i++ {
-			colName := columns[i]
-			setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
-		}
-		resultSetData = reflect.Append(resultSetData, temporaryValue)
-	}
-
-	//更新target的值
-	reflect.Indirect(reflect.ValueOf(resultSet)).Set(resultSetData)
-	return nil
+//查询所有记录
+func Select(resultSet interface{}, conditions ...string) error {
+	return TsSelect(nilTs, resultSet, conditions...)
 }
 
-//查询所有记录
-func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
+//查询所有记录(在事务里)
+func TsSelect(gtx *Transaction, resultSet interface{}, conditions ...string) error {
 	//获得target的反射信息
 	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
 	if resultsetRawData.Type().Kind() != reflect.Slice {
@@ -177,13 +157,13 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 	//获取切片的元素的类型
 	elementType := resultsetRawData.Type().Elem()
 	//生成sql
-	sqlStr, err := ParseQueryAllSql(reflect.New(elementType).Interface())
+	sqlStr, err := ParseSelectSql(reflect.New(elementType).Interface(), conditions...)
 	if err != nil {
 		return err
 	}
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 
-	stmt, err := getStatement(sqlStr, gtx...)
+	stmt, err := getStatement(sqlStr, gtx)
 	if err != nil {
 		return err
 	}
@@ -227,11 +207,16 @@ func QueryAll(resultSet interface{}, gtx ...*Transaction) error {
 }
 
 //执行之定义sql查询语句
-func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) error {
+func CustomQuery(sqlStr string, resultSet interface{}) error {
+	return TsCustomQuery(nilTs, sqlStr, resultSet)
+}
+
+//执行之定义sql查询语句
+func TsCustomQuery(gtx *Transaction, sqlStr string, resultSet interface{}) error {
 	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
 	//获得target的反射信息
 	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
-	stmt, err := getStatement(sqlStr, gtx...)
+	stmt, err := getStatement(sqlStr, gtx)
 	if err != nil {
 		return err
 	}
@@ -309,32 +294,67 @@ func CustomQuery(sqlStr string, resultSet interface{}, gtx ...*Transaction) erro
 	return nil
 }
 
-//获得statement,有事务和非事务2种情况
-func getStatement(sqlStr string, gtx ...*Transaction) (*sql.Stmt, error) {
-	//校验是否初始化
-	if !isInit {
-		panic("no db init")
-	}
-
-	var stmt *sql.Stmt
-	var err error
-	//判断是否在事务中执行
-	if len(gtx) > 0 {
-		stmt, err = gtx[0].tx.Prepare(sqlStr)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		//从sql.DB里获得stmt
-		stmt, err = gdb.Prepare(sqlStr)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return stmt, err
+/*
+//查询记录
+func Select(resultSet interface{}, condition ...string) error {
+	return TsSelect(nilTs, resultSet, condition...)
 }
 
-//关闭DB对象
-func CloseDB() {
-	gdb.Close()
+
+//查询记录
+func TsSelect(ts *Transaction, resultSet interface{}, conditions ...string) error {
+
+	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
+	//获取切片的元素的类型
+	elementType := resultsetRawData.Type().Elem()
+
+	sqlStr, err := ParseQuerySql(elementType, conditions...)
+	if err != nil {
+		return err
+	}
+	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
+
+	stmt, err := getStatement(sqlStr, ts)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	//查询
+	rows, err := stmt.Query()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	//获得所有列
+	columns, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	//获得列的数量
+	colNum := len(columns)
+	values := make([]sql.RawBytes, colNum)
+	scans := make([]interface{}, colNum)
+	//封装
+	for i := range values {
+		scans[i] = &values[i]
+	}
+	//遍历所有记录
+	for rows.Next() {
+		err := rows.Scan(scans...)
+		if err != nil {
+			return err
+		}
+		//根据反射来新建一个临时value和记录对应的对象
+		var temporaryValue = reflect.New(elementType).Elem()
+		for i := 0; i < colNum; i++ {
+			colName := columns[i]
+			setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
+		}
+		resultsetRawData = reflect.Append(resultsetRawData, temporaryValue)
+	}
+
+	//更新target的值
+	reflect.Indirect(reflect.ValueOf(resultSet)).Set(resultsetRawData)
+	return nil
 }
+*/

@@ -20,3 +20,9 @@ func InitDB(dialect, connStr string) {
 	gdb = db
 	isInit = true
 }
+
+
+//关闭DB对象
+func CloseDB() {
+	gdb.Close()
+}
