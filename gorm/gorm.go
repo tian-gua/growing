@@ -8,35 +8,6 @@ import (
 	"time"
 )
 
-/*
-//插入或者更新一条记录
-//插入和更新取决于 id 字段是否为0
-func Save(obj interface{}, gtx ...*Transaction) (int64, error) {
-	var err error
-	//生成sql
-	sqlStr, err := ParseSaveSql(obj)
-	if err != nil {
-		return 0, err
-	}
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
-	stmt, err := getStatement(sqlStr, gtx...)
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	result, err := stmt.Exec()
-	if err != nil {
-		return 0, err
-	}
-	if strings.HasPrefix(sqlStr, "insert") {
-		return result.LastInsertId()
-	}
-	return result.RowsAffected()
-}
-*/
-
 /**有选择的插入记录，如果字段为零值则不插入*/
 func InsertSelective(obj interface{}) (int64, error) {
 	return TsInsertSelective(nilTs, obj)
@@ -293,68 +264,3 @@ func TsCustomQuery(gtx *Transaction, sqlStr string, resultSet interface{}) error
 	}
 	return nil
 }
-
-/*
-//查询记录
-func Select(resultSet interface{}, condition ...string) error {
-	return TsSelect(nilTs, resultSet, condition...)
-}
-
-
-//查询记录
-func TsSelect(ts *Transaction, resultSet interface{}, conditions ...string) error {
-
-	resultsetRawData := reflect.Indirect(reflect.ValueOf(resultSet))
-	//获取切片的元素的类型
-	elementType := resultsetRawData.Type().Elem()
-
-	sqlStr, err := ParseQuerySql(elementType, conditions...)
-	if err != nil {
-		return err
-	}
-	fmt.Println("[sql-gorm-" + gutils.DateFormat(time.Now(), "yyyy-MM-dd HH:mm:ss") + "]:" + sqlStr)
-
-	stmt, err := getStatement(sqlStr, ts)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-	//查询
-	rows, err := stmt.Query()
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	//获得所有列
-	columns, err := rows.Columns()
-	if err != nil {
-		return err
-	}
-	//获得列的数量
-	colNum := len(columns)
-	values := make([]sql.RawBytes, colNum)
-	scans := make([]interface{}, colNum)
-	//封装
-	for i := range values {
-		scans[i] = &values[i]
-	}
-	//遍历所有记录
-	for rows.Next() {
-		err := rows.Scan(scans...)
-		if err != nil {
-			return err
-		}
-		//根据反射来新建一个临时value和记录对应的对象
-		var temporaryValue = reflect.New(elementType).Elem()
-		for i := 0; i < colNum; i++ {
-			colName := columns[i]
-			setRawData(temporaryValue.FieldByName(toCamelCase(colName)), values[i])
-		}
-		resultsetRawData = reflect.Append(resultsetRawData, temporaryValue)
-	}
-
-	//更新target的值
-	reflect.Indirect(reflect.ValueOf(resultSet)).Set(resultsetRawData)
-	return nil
-}
-*/

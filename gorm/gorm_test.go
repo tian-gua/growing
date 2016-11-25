@@ -81,23 +81,3 @@ func Test_gorm_query(t *testing.T) {
 	}
 	t.Log(p)
 }
-
-/*
-func Test_gorm_save_update(t *testing.T) {
-	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
-	id, err := Save(&practice{Id: 2, Name: "saf", CreateTime: time.Now()})
-	if err != nil {
-		panic(err)
-	}
-	t.Log(id)
-}
-
-func Test_gorm_save_insert(t *testing.T) {
-	InitDB("mysql", "root:root@tcp(127.0.0.1:3306)/practice")
-	id, err := Save(&practice{Name: "aa", CreateTime: time.Now()})
-	if err != nil {
-		panic(err)
-	}
-	t.Log(id)
-}
-*/
