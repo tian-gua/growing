@@ -10,7 +10,7 @@ import (
 
 /**有选择的插入记录，如果字段为零值则不插入*/
 func InsertSelective(obj interface{}) (int64, error) {
-	return TsInsertSelective(nilTs, obj)
+	return TsInsertSelective(nil, obj)
 }
 
 /**有选择的插入记录(在事务里)，如果字段为零值则不插入*/
@@ -20,7 +20,7 @@ func TsInsertSelective(gtx *Transaction, obj interface{}) (int64, error) {
 
 /**插入记录*/
 func Insert(obj interface{}) (int64, error) {
-	return TsInsert(nilTs, obj)
+	return TsInsert(nil, obj)
 }
 
 /**插入记录(在事务里)*/
@@ -30,7 +30,7 @@ func TsInsert(gtx *Transaction, obj interface{}) (int64, error) {
 
 /**有选择的更新记录，如果字段为零值则不更新*/
 func UpdateSelective(obj interface{}) (int64, error) {
-	return TsUpdateSelective(nilTs, obj)
+	return TsUpdateSelective(nil, obj)
 }
 
 /**有选择的更新记录(在事务里)，如果字段为零值则不更新*/
@@ -40,7 +40,7 @@ func TsUpdateSelective(gtx *Transaction, obj interface{}) (int64, error) {
 
 /**更新记录*/
 func Update(obj interface{}) (int64, error) {
-	return TsUpdate(nilTs, obj)
+	return TsUpdate(nil, obj)
 }
 
 /**更新记录(在事务里)*/
@@ -89,7 +89,7 @@ func insertOrUpdate(obj interface{}, isSelective bool, isInsert bool, gtx *Trans
 
 //删除一条记录
 func Delete(obj interface{}) (int64, error) {
-	return TsDelete(nilTs, obj)
+	return TsDelete(nil, obj)
 }
 
 //删除一条记录(在事务里)
@@ -115,7 +115,7 @@ func TsDelete(gtx *Transaction, obj interface{}) (int64, error) {
 
 //查询所有记录
 func Select(resultSet interface{}, conditions ...string) error {
-	return TsSelect(nilTs, resultSet, conditions...)
+	return TsSelect(nil, resultSet, conditions...)
 }
 
 //查询所有记录(在事务里)
@@ -179,7 +179,7 @@ func TsSelect(gtx *Transaction, resultSet interface{}, conditions ...string) err
 
 //执行之定义sql查询语句
 func CustomQuery(sqlStr string, resultSet interface{}) error {
-	return TsCustomQuery(nilTs, sqlStr, resultSet)
+	return TsCustomQuery(nil, sqlStr, resultSet)
 }
 
 //执行之定义sql查询语句

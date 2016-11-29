@@ -11,9 +11,6 @@ type Transaction struct {
 	tx *sql.Tx
 }
 
-//nil, 不适用事务时,可以用到此变量
-var nilTs *Transaction
-
 //提交
 func (this *Transaction) Commit() {
 	err := this.tx.Commit()
