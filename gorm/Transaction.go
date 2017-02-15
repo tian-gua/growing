@@ -56,6 +56,7 @@ func TsHook(tsf TsFunc) error {
 			fmt.Printf("事务过程中发生异常:[%s],即将回滚...\n", err)
 			tx.RollBack()
 			fmt.Println("事务回滚成功!")
+			panic(err)
 		} else {
 			fmt.Println("事务过程执行完毕,即将提交...")
 			tx.Commit()
